@@ -85,11 +85,6 @@ MainMenu::MainMenu(const glm::vec2& fbSize):
 
 void MainMenu::processInput(const Input<int, std::hash<int>>& keys)
 {
-    if(keys.wasPressed(GLFW_KEY_ESCAPE))
-    {
-        isDead = true;
-        new_menu = MenuName::None;
-    }
     if(keys.wasPressed(GLFW_KEY_W) || keys.wasPressed(GLFW_KEY_UP))
     {
         options[current_option]->bloom = false;
@@ -169,7 +164,7 @@ Pause::Pause(const glm::vec2& fbSize):
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "main menu"));
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
-                                             font, 1.f, "exit"));
+                                             font, 1.f, "quit"));
 
     float sizeY = 0.f;
     for(auto& option: options)
@@ -202,11 +197,6 @@ Pause::Pause(const glm::vec2& fbSize):
 
 void Pause::processInput(const Input<int, std::hash<int>>& keys)
 {
-    if(keys.wasPressed(GLFW_KEY_ESCAPE))
-    {
-        isDead = true;
-        new_menu = MenuName::None;
-    }
     if(keys.wasPressed(GLFW_KEY_W) || keys.wasPressed(GLFW_KEY_UP))
     {
         options[current_option]->bloom = false;
