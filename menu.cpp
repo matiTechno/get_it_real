@@ -18,7 +18,7 @@ Intro::Intro(const glm::vec2& fbSize):
     text_scaling_time(3.f),
     intro_time_left(6.f),
     max_intro_time(intro_time_left),
-    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 40))
+    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60))
 {
     text = std::make_unique<Text>(glm::vec4(255.f, 255.f, 0.f, 1.f), true, glm::vec2(),
                                   font, max_scale, "I'm matimaci!\nOhaio.\nArkanoid demo...");
@@ -59,7 +59,7 @@ void Intro::render(Renderer_2D& renderer) const
 MainMenu::MainMenu(const glm::vec2& fbSize):
     Menu(MenuName::MainMenu),
     projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
-    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 40)),
+    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
     current_option(0)
 {
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 0.f, 255.f, 1.f), false, glm::vec2(),
@@ -161,14 +161,14 @@ void Game::render(Renderer_2D& renderer) const
 Pause::Pause(const glm::vec2& fbSize):
     Menu(MenuName::Pause),
     projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
-    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 40)),
+    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
     current_option(0)
 {
-    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 0.f, 255.f, 1.f), false, glm::vec2(),
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "resume"));
-    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 0.f, 255.f, 1.f), false, glm::vec2(),
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "main menu"));
-    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 0.f, 255.f, 1.f), false, glm::vec2(),
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "exit"));
 
     float sizeY = 0.f;
@@ -193,11 +193,11 @@ Pause::Pause(const glm::vec2& fbSize):
             rightX = options[i]->position.x + options[i]->getSize().x;
     }
 
-    bigbb = glm::vec2(rightX - leftX, sizeY);
+    bigbb = glm::vec2(rightX - leftX + 40.f, sizeY + 40.f);
     sprite.color = glm::vec4(0.f, 0.f, 0.f, 1.f);
     sprite.bloom = false;
     sprite.size = bigbb;
-    sprite.position = glm::vec2(leftX, options[0]->position.y);
+    sprite.position = glm::vec2(leftX - 20.f, options[0]->position.y - 20.f);
 }
 
 void Pause::processInput(const Input<int, std::hash<int>>& keys)
