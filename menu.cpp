@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <postprocessor.hpp>
+#include <soundsystem.hpp>
 
 Menu::Menu(MenuName this_menu):
     isDead(false),
@@ -22,12 +23,23 @@ Intro::Intro(const glm::vec2& fbSize):
 {
     text = std::make_unique<Text>(glm::vec4(255.f, 255.f, 0.f, 1.f), true, glm::vec2(),
                                   font, max_scale, "I'm matimaci!\nOhaio.\nArkanoid demo...");
+
+    SoundSystem::playIntroMusic(true);
+
+    PData pdata{true, glm::vec2(2, 5), glm::vec4(255.f, 0.f, 255.f, 1.f), glm::vec4(255.f, 0.f, 255.f, 1.f),
+                glm::vec2(0.5f, 4.f), nullptr, glm::vec4(-50.f, 50.f, 50.f, -50.f), glm::vec4(-50.f, 50.f, 50.f, -50.f),
+                nullptr};
+
+    generator = std::make_unique<ParticleGenerator>(0.001f, fbSize/2.f, 3.f, glm::vec4(-50.f, -50.f, 100.f, 100.f),
+                                                    true, GL_SRC_ALPHA, GL_ONE, pdata);
 }
 
 void Intro::processInput(const Input<int, std::hash<int>>& keys)
 {
     if(keys.wasPressed(GLFW_KEY_ESCAPE) || keys.wasPressed(GLFW_KEY_SPACE) || keys.wasPressed(GLFW_KEY_ENTER))
+    {
         intro_time_left = 0.f;
+    }
 }
 
 void Intro::update(float frameTime, PostProcessor& postProccesor)
@@ -38,6 +50,7 @@ void Intro::update(float frameTime, PostProcessor& postProccesor)
         isDead = true;
         new_menu = MenuName::MainMenu;
         postProccesor.setWave(false);
+        SoundSystem::playIntroMusic(false);
     }
     else if(max_intro_time - intro_time_left < text_scaling_time)
     {
@@ -48,12 +61,15 @@ void Intro::update(float frameTime, PostProcessor& postProccesor)
     {
         postProccesor.setWave(true);
     }
+
+    generator->update(frameTime);
 }
 
 void Intro::render(Renderer_2D& renderer) const
 {
     renderer.load_projection(projection);
     renderer.render(*text);
+    renderer.render(*generator);
 }
 
 MainMenu::MainMenu(const glm::vec2& fbSize):
@@ -62,11 +78,11 @@ MainMenu::MainMenu(const glm::vec2& fbSize):
     font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
     current_option(0)
 {
-    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 0.f, 255.f, 1.f), false, glm::vec2(),
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "start game"));
-    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 0.f, 255.f, 1.f), false, glm::vec2(),
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "show intro"));
-    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 0.f, 255.f, 1.f), false, glm::vec2(),
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "quit"));
 
     float sizeY = 0.f;
@@ -92,6 +108,7 @@ void MainMenu::processInput(const Input<int, std::hash<int>>& keys)
             current_option = options.size() - 1;
         else
             --current_option;
+        SoundSystem::playSwitch();
     }
     if(keys.wasPressed(GLFW_KEY_S) || keys.wasPressed(GLFW_KEY_DOWN))
     {
@@ -100,6 +117,7 @@ void MainMenu::processInput(const Input<int, std::hash<int>>& keys)
             current_option = 0;
         else
             ++current_option;
+        SoundSystem::playSwitch();
     }
     if(keys.wasPressed(GLFW_KEY_ENTER) || keys.wasPressed(GLFW_KEY_SPACE))
     {
@@ -117,6 +135,7 @@ void MainMenu::processInput(const Input<int, std::hash<int>>& keys)
             isDead = true;
             new_menu = MenuName::None;
         }
+        SoundSystem::playClick();
     }
     options[current_option]->bloom = true;
 }
@@ -126,31 +145,6 @@ void MainMenu::render(Renderer_2D& renderer) const
     renderer.load_projection(projection);
     for(auto& option: options)
         renderer.render(*option);
-}
-
-Game::Game(const glm::vec2& fbSize):
-    Menu(MenuName::Game)
-{
-    glm::vec2 projSize(640.f, 480.f);
-    projection = glm::ortho(0.f, projSize.x, projSize.y, 0.f);
-    assert(projSize.x / projSize.y == fbSize.x / fbSize.y);
-}
-
-void Game::processInput(const Input<int, std::hash<int>>& keys)
-{
-    if(keys.wasPressed(GLFW_KEY_ESCAPE))
-        new_menu = MenuName::Pause;
-}
-
-void Game::render(Renderer_2D& renderer) const
-{
-    Sprite sprite;
-    sprite.size = glm::vec2(400.f, 400.f);
-    sprite.position = glm::vec2(100.f, 100.f);
-    sprite.bloom = true;
-    sprite.color = glm::vec4(0.f, 255.f, 127.f, 1.f);
-    renderer.load_projection(projection);
-    renderer.render(sprite);
 }
 
 Pause::Pause(const glm::vec2& fbSize):
@@ -204,6 +198,7 @@ void Pause::processInput(const Input<int, std::hash<int>>& keys)
             current_option = options.size() - 1;
         else
             --current_option;
+        SoundSystem::playSwitch();
     }
     if(keys.wasPressed(GLFW_KEY_S) || keys.wasPressed(GLFW_KEY_DOWN))
     {
@@ -212,6 +207,7 @@ void Pause::processInput(const Input<int, std::hash<int>>& keys)
             current_option = 0;
         else
             ++current_option;
+        SoundSystem::playSwitch();
     }
     if(keys.wasPressed(GLFW_KEY_ENTER) || keys.wasPressed(GLFW_KEY_SPACE))
     {
@@ -230,6 +226,7 @@ void Pause::processInput(const Input<int, std::hash<int>>& keys)
             isDead = true;
             new_menu = MenuName::None;
         }
+        SoundSystem::playClick();
     }
     options[current_option]->bloom = true;
 }
@@ -241,4 +238,163 @@ void Pause::render(Renderer_2D& renderer) const
 
     for(auto& option: options)
         renderer.render(*option);
+}
+
+NewGameMenu::NewGameMenu(const glm::vec2& fbSize):
+    Menu(MenuName::NewGameMenu),
+    projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
+    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
+    current_option(0)
+{
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
+                                             font, 1.f, "play again"));
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
+                                             font, 1.f, "main menu"));
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
+                                             font, 1.f, "quit"));
+
+    float sizeY = 0.f;
+    for(auto& option: options)
+    {
+        sizeY += option->getSize().y;
+    }
+    std::size_t count = 0;
+    for(auto& option: options)
+    {
+        option->position = glm::vec2(fbSize.x / 2.f - option->getSize().x / 2.f,
+                                     fbSize.y / 2.f - sizeY / 2.f + count * sizeY / options.size());
+        ++count;
+    }
+}
+
+void NewGameMenu::processInput(const Input<int, std::hash<int>>& keys)
+{
+    if(keys.wasPressed(GLFW_KEY_W) || keys.wasPressed(GLFW_KEY_UP))
+    {
+        options[current_option]->bloom = false;
+        if(current_option == 0)
+            current_option = options.size() - 1;
+        else
+            --current_option;
+        SoundSystem::playSwitch();
+    }
+    if(keys.wasPressed(GLFW_KEY_S) || keys.wasPressed(GLFW_KEY_DOWN))
+    {
+        options[current_option]->bloom = false;
+        if(current_option == options.size() - 1)
+            current_option = 0;
+        else
+            ++current_option;
+        SoundSystem::playSwitch();
+    }
+    if(keys.wasPressed(GLFW_KEY_ENTER) || keys.wasPressed(GLFW_KEY_SPACE))
+    {
+        if(current_option == 0)
+        {
+            isDead = true;
+            new_menu = MenuName::Game;
+        }
+        else if(current_option == 1)
+        {
+            isDead = true;
+            new_menu = MenuName::MainMenu;
+        }
+        else if(current_option == 2)
+        {
+            isDead = true;
+            new_menu = MenuName::None;
+        }
+        SoundSystem::playClick();
+    }
+    options[current_option]->bloom = true;
+}
+
+void NewGameMenu::render(Renderer_2D& renderer) const
+{
+    renderer.load_projection(projection);
+    for(auto& option: options)
+        renderer.render(*option);
+}
+
+WinScreen::WinScreen(const glm::vec2& fbSize):
+    Menu(MenuName::WinScreen),
+    projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
+    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
+    scene_time(5.f),
+    scene_time_left(scene_time)
+{
+    text = std::make_unique<Text>(glm::vec4(100.f, 100.f, 255.f, 0.f), true, glm::vec2(),
+                                  font, 1.f, "You Won!");
+
+    text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);
+
+    PData pdata{true, glm::vec2(1, 3), glm::vec4(100.f, 100.f, 255.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
+                glm::vec2(0.5f, 4.f), nullptr, glm::vec4(0.f, 100.f, 0.f, 100.f), glm::vec4(0.f, 0.f, 0.f, 0.f),
+                nullptr};
+
+    generator = std::make_unique<ParticleGenerator>(0.001f, glm::vec2(0.f, 0.f), scene_time,
+                                                    glm::vec4(0.f, -50.f, fbSize.x, fbSize.y + 50.f),
+                                                    false, GL_SRC_ALPHA, GL_ONE, pdata);
+}
+
+void WinScreen::update(float frameTime, PostProcessor&)
+{
+    scene_time_left -= frameTime;
+    if(scene_time_left < 0.f)
+    {
+        isDead = true;
+        new_menu = MenuName::NewGameMenu;
+    }
+
+    generator->update(frameTime);
+
+    text->color.a = (scene_time - scene_time_left) / scene_time;
+}
+
+void WinScreen::render(Renderer_2D& renderer) const
+{
+    renderer.load_projection(projection);
+    renderer.render(*generator);
+    renderer.render(*text);
+}
+
+LoseScreen::LoseScreen(const glm::vec2& fbSize):
+    Menu(MenuName::LoseScreen),
+    projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
+    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
+    scene_time(5.f),
+    scene_time_left(scene_time)
+{
+    text = std::make_unique<Text>(glm::vec4(255.f, 0.f, 0.f, 0.f), true, glm::vec2(),
+                                  font, 1.f, "You lost...");
+
+    text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);
+
+    PData pdata{true, glm::vec2(1, 3), glm::vec4(255.f, 0.f, 0.f, 1.f), glm::vec4(255.f, 100.f, 0.f, 1.f),
+                glm::vec2(0.5f, 4.f), nullptr, glm::vec4(0.f, 100.f, 0.f, 100.f), glm::vec4(0.f, 0.f, 0.f, 0.f),
+                nullptr};
+
+    generator = std::make_unique<ParticleGenerator>(0.001f, glm::vec2(0.f, 0.f), scene_time, glm::vec4(0.f, -50.f, fbSize.x, fbSize.y + 50.f),
+                                                    false, GL_SRC_ALPHA, GL_ONE, pdata);
+}
+
+void LoseScreen::update(float frameTime, PostProcessor&)
+{
+    scene_time_left -= frameTime;
+    if(scene_time_left < 0.f)
+    {
+        isDead = true;
+        new_menu = MenuName::NewGameMenu;
+    }
+
+    generator->update(frameTime);
+
+    text->color.a = (scene_time - scene_time_left) / scene_time;
+}
+
+void LoseScreen::render(Renderer_2D& renderer) const
+{
+    renderer.load_projection(projection);
+    renderer.render(*generator);
+    renderer.render(*text);
 }

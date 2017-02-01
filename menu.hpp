@@ -8,6 +8,7 @@
 #include <text.hpp>
 #include <renderer_2d.hpp>
 #include <sprite.hpp>
+#include <particle.hh>
 class PostProcessor;
 template<typename T, typename Hash>
 class Input;
@@ -18,7 +19,10 @@ enum class MenuName
     Intro,
     MainMenu,
     Game,
-    Pause
+    Pause,
+    NewGameMenu,
+    LoseScreen,
+    WinScreen
 };
 
 class Menu
@@ -66,6 +70,7 @@ private:
     glm::vec2 fbSize;
     float max_scale, text_scaling_time, intro_time_left, max_intro_time;
     Font font;
+    std::unique_ptr<ParticleGenerator> generator;
 };
 
 class MainMenu: public Menu
@@ -83,18 +88,6 @@ private:
     std::size_t current_option;
 };
 
-class Game: public Menu
-{
-public:
-    Game(const glm::vec2& fbSize);
-
-    void processInput(const Input<int, std::hash<int>>& keys) override;
-    void render(Renderer_2D& renderer) const override;
-
-private:
-    glm::mat4 projection;
-};
-
 class Pause: public Menu
 {
 public:
@@ -110,6 +103,54 @@ private:
     std::size_t current_option;
     glm::vec2 bigbb;
     Sprite sprite;
+};
+
+class NewGameMenu: public Menu
+{
+public:
+    NewGameMenu(const glm::vec2& fbSize);
+
+    void processInput(const Input<int, std::hash<int>>& keys) override;
+    void render(Renderer_2D& renderer) const override;
+
+private:
+
+    std::vector<std::unique_ptr<Text>> options;
+    glm::mat4 projection;
+    Font font;
+    std::size_t current_option;
+};
+
+class WinScreen: public Menu
+{
+public:
+    WinScreen(const glm::vec2& fbSize);
+
+    void update(float frameTime, PostProcessor& postProccesor) override;
+    void render(Renderer_2D& renderer) const override;
+
+private:
+    std::unique_ptr<Text> text;
+    glm::mat4 projection;
+    Font font;
+    std::unique_ptr<ParticleGenerator> generator;
+    float scene_time, scene_time_left;
+};
+
+class LoseScreen: public Menu
+{
+public:
+    LoseScreen(const glm::vec2& fbSize);
+
+    void update(float frameTime, PostProcessor& postProccesor) override;
+    void render(Renderer_2D& renderer) const override;
+
+private:
+    std::unique_ptr<Text> text;
+    glm::mat4 projection;
+    Font font;
+    std::unique_ptr<ParticleGenerator> generator;
+    float scene_time, scene_time_left;
 };
 
 #endif // MENU_HPP

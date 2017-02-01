@@ -13,6 +13,7 @@ class Shader;
 #include <opengl/texture.hpp>
 #include <unordered_map>
 #include FT_FREETYPE_H
+class ParticleGenerator;
 
 struct Character
 {
@@ -39,12 +40,13 @@ public:
 
     void render(const Sprite& sprite) const;
     void render(const Text& text) const;
+    void render(const ParticleGenerator& generator);
     void load_projection(const glm::mat4& projection);
 
     static Font loadFont(const std::string& filename, unsigned size);
 
 private:
-    std::unique_ptr<Shader> shader_texture, shader_rect, shader_font;
+    std::unique_ptr<Shader> shader_texture, shader_rect, shader_font, shader_particle;
     BO vbo;
     VAO vao;
     Sampler sampler;

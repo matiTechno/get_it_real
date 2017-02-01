@@ -7,6 +7,8 @@
 #include <chrono>
 #include <renderer_2d.hpp>
 #include <postprocessor.hpp>
+#include <soundsystem.hpp>
+#include <game/game.hpp>
 
 void error_callback(int error, const char* description)
 {
@@ -37,6 +39,11 @@ std::unique_ptr<PostProcessor> App::postProcessor;
 Input<int, std::hash<int>> App::keys;
 std::vector<std::unique_ptr<Menu>> App::menus;
 glm::vec2 App::fbSize;
+
+// sound xd
+std::unique_ptr<sf::SoundBuffer> SoundSystem::click_buffer, SoundSystem::switch_buffer;
+std::unique_ptr<sf::Sound> SoundSystem::click_sound, SoundSystem::switch_sound;
+std::unique_ptr<sf::Music> SoundSystem::intro_music;
 
 App::App()
 {
@@ -86,6 +93,7 @@ App::App()
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowFocusCallback(window, window_focus_callback);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -99,6 +107,8 @@ App::App()
     postProcessor = std::make_unique<PostProcessor>(fb_width, fb_height);
 
     fbSize = glm::vec2(fb_width, fb_height);
+
+    SoundSystem::init();
 
     menus.push_back(std::make_unique<Intro>(fbSize));
 
@@ -178,6 +188,13 @@ bool App::handleMenus()
     case MenuName::Game: menus.push_back(std::make_unique<Game>(fbSize));
         break;
     case MenuName::Pause: menus.push_back(std::make_unique<Pause>(fbSize));
+        break;
+    case MenuName::NewGameMenu: menus.push_back(std::make_unique<NewGameMenu>(fbSize));
+        break;
+    case MenuName::LoseScreen: menus.push_back(std::make_unique<LoseScreen>(fbSize));
+        break;
+    case MenuName::WinScreen: menus.push_back(std::make_unique<WinScreen>(fbSize));
+        break;
     }
     if(menus.empty())
     {

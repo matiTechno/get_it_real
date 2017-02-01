@@ -4,6 +4,7 @@
 #include <opengl/shader.hpp>
 #include <vector>
 #include <text.hpp>
+#include <particle.hh>
 
 FT_Library Renderer_2D::ftLib;
 
@@ -113,6 +114,45 @@ Renderer_2D::Renderer_2D()
 
             shader_font = std::make_unique<Shader>(vs_source, fs_source);
         }
+        {
+            std::string vs_source(
+                        "#version 330\n"
+                        "layout (location = 0) in vec4 vertex;"
+                        "layout (location = 1) in vec4 color;\n"
+                        "layout (location = 2) in vec3 model;\n"
+                        "uniform mat4 projection;\n"
+                        "out vec4 spriteColor;\n"
+                        "out vec2 texCoord;\n"
+                        "void main()\n"
+                        "{\n"
+                        "gl_Position = projection * vec4(vertex.xy * model.z + model.xy, 0, 1);\n"
+                        "texCoord = vertex.zw;"
+                        "spriteColor = color;"
+                        "}");
+
+            std::string fs_source(
+                        "#version 330\n"
+                        "in vec2 texCoord;\n"
+                        "in vec4 spriteColor;\n"
+                        "layout (location = 0) out vec4 color;\n"
+                        "layout (location = 1) out vec4 color_bloom;\n"
+                        "uniform sampler2D sampl;\n"
+                        "uniform bool bloom;\n"
+                        "uniform bool texture_b;\n"
+                        "void main()\n"
+                        "{\n"
+                        "if(texture_b)\n"
+                        "color = vec4(1, 1, 1, texture(sampl, texCoord).r) * spriteColor;\n"
+                        "else\n"
+                        "color = spriteColor;\n"
+                        "if(bloom)"
+                        "color_bloom = color;"
+                        "else\n"
+                        "color_bloom = vec4(0, 0, 0, 1);"
+                        "}");
+
+            shader_particle = std::make_unique<Shader>(vs_source, fs_source);
+        }
     }
 }
 
@@ -166,6 +206,8 @@ void Renderer_2D::load_projection(const glm::mat4& projection)
     glUniformMatrix4fv(shader_rect->getUniLoc("projection"), 1, GL_FALSE, &projection[0][0]);
     shader_font->bind();
     glUniformMatrix4fv(shader_font->getUniLoc("projection"), 1, GL_FALSE, &projection[0][0]);
+    shader_particle->bind();
+    glUniformMatrix4fv(shader_particle->getUniLoc("projection"), 1, GL_FALSE, &projection[0][0]);
 }
 
 void Renderer_2D::render(const Text& text) const
@@ -291,4 +333,40 @@ Font Renderer_2D::loadFont(const std::string& filename, unsigned size)
     FT_Done_Face(face);
 
     return Font{std::move(texture), newLineSpace, std::move(characters), maxBearingY};
+}
+
+void Renderer_2D::render(const ParticleGenerator& generator)
+{
+    generator.vboDynamic.bind(GL_ARRAY_BUFFER);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0,
+                    static_cast<GLsizeiptr>(static_cast<std::size_t>(generator.lastActive + 1) * sizeof(Instance)),
+                    generator.vboData.data());
+
+    generator.vao.bind();
+    sampler.bind();
+
+    GLint dFactor, sFactor;
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &dFactor);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &sFactor);
+
+    glBlendFunc(generator.sFactor, generator.dFactor);
+
+    shader_particle->bind();
+    if(generator.pData.texture)
+    {
+        generator.pData.texture->bind();
+        glUniform1f(shader_particle->getUniLoc("texture_b"), true);
+    }
+    else
+        glUniform1f(shader_particle->getUniLoc("texture_b"), false);
+
+    if(generator.pData.bloom)
+        glUniform1f(shader_particle->getUniLoc("bloom"), true);
+    else
+        glUniform1f(shader_particle->getUniLoc("bloom"), false);
+
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, generator.lastActive + 1);
+
+    glBlendFunc(static_cast<GLenum>(sFactor), static_cast<GLenum>(dFactor));
 }

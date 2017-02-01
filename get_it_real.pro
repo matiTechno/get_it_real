@@ -5,7 +5,7 @@ CONFIG -= qt
 
 QMAKE_CXXFLAGS += -pedantic
 
-LIBS += -lglfw -lGL -ldl -lfreetype
+LIBS += -lglfw -lGL -ldl -lfreetype -lsfml-audio
 
 INCLUDEPATH += /usr/include/freetype2
 
@@ -19,7 +19,9 @@ SOURCES += main.cpp \
     opengl/sampler.cpp \
     postprocessor.cpp \
     text.cpp \
-    menu.cpp
+    menu.cpp \
+    particle.cpp \
+    game/game.cpp
 
 HEADERS += \
     glad/glad.h \
@@ -34,4 +36,7 @@ HEADERS += \
     postprocessor.hpp \
     text.hpp \
     input.hpp \
-    menu.hpp
+    menu.hpp \
+    soundsystem.hpp \
+    particle.hh \
+    game/game.hpp
