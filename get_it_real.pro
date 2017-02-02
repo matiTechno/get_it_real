@@ -28,7 +28,8 @@ SOURCES += main.cpp \
     game/animation.cpp \
     game/entity.cpp \
     game/healthbar.cpp \
-    game/animentity.cpp
+    game/animentity.cpp \
+    game/collisions.cpp
 
 HEADERS += \
     glad/glad.h \
@@ -53,4 +54,5 @@ HEADERS += \
     game/brick.hpp \
     game/animation.hh \
     game/healthbar.hpp \
-    game/animentity.hpp
+    game/animentity.hpp \
+    game/collisions.hpp

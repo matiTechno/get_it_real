@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <soundsystem.hpp>
 #include <input.hpp>
+#include <game/collisions.hpp>
 
 Game::Game(const glm::vec2& fbSize):
     Menu(MenuName::Game),
@@ -67,13 +68,19 @@ Game::Game(const glm::vec2& fbSize):
     paddle.texCoords = glm::vec4(47, 112, 64, 16);
     paddle.size = glm::vec2(100.f, 30.f);
     paddle.position = glm::vec2(projSize.x / 2.f - paddle.size.x / 2.f, projSize.y - 80.f);
+    paddle.minReflectAngle = glm::pi<float>() / 6.f;
+    paddle.velMod = 220.f;
 
     ball.texture = &ball_tex;
+    ball.paddle = &paddle;
     ball.texCoords = glm::vec4(0.f, 0.f, ball.texture->getSize().x, ball.texture->getSize().y);
     ball.color = glm::vec4(255.f, 0.f, 255.f, 1.f);
     ball.glow = true;
     ball.size = glm::vec2(20, 20);
-    ball.position = glm::vec2(200.f, 200.f);
+    ball.velocity = glm::vec2(0.f, 300.f);
+    ball.reset();
+
+    paddle.ball = &ball;
 
     glm::vec4 br_place(bricks[1].size.x, bricks[0].size.y,
             bricks[2].position.x - (bricks[1].size.x  - bricks[1].position.x), projSize.y / 2.5f);
@@ -133,32 +140,25 @@ Game::Game(const glm::vec2& fbSize):
 
 void Game::processInput(const Input<int, std::hash<int>>& keys)
 {
+    paddle.velocity = glm::vec2(0.f, 0.f);
+
     if(keys.wasPressed(GLFW_KEY_ESCAPE))
     {
         new_menu = MenuName::Pause;
     }
-    if(keys.wasPressed(GLFW_KEY_Q))
-    {
-        hp_bar->loseLife(*this);
-    }
-    if(keys.wasPressed(GLFW_KEY_W))
-    {
-        isDead = true;
-        new_menu = MenuName::WinScreen;
-    }
     if(keys.wasPressed(GLFW_KEY_A) || keys.isPressed(GLFW_KEY_A)
             || keys.wasPressed(GLFW_KEY_LEFT) || keys.isPressed(GLFW_KEY_LEFT))
     {
-        // move left
+        paddle.velocity.x -= paddle.velMod;
     }
     if(keys.wasPressed(GLFW_KEY_D) || keys.isPressed(GLFW_KEY_D)
             || keys.wasPressed(GLFW_KEY_RIGHT) || keys.isPressed(GLFW_KEY_RIGHT))
     {
-        // move right
+        paddle.velocity.x += paddle.velMod;
     }
     if(keys.wasPressed(GLFW_KEY_SPACE) || keys.isPressed(GLFW_KEY_SPACE))
     {
-        // release ball
+        ball.isStuck_ = false;
     }
 }
 
@@ -190,6 +190,12 @@ void Game::update_logic(float dt_sec)
                          return true;
                          return false;
                      }), animations.end());
+
+    ball.update(dt_sec);
+    paddle.update(dt_sec);
+
+    //4 LAST AFTER MOVING ALL ENTITIES
+    doCollisions();
 }
 
 void Game::render(Renderer_2D& renderer)
@@ -205,6 +211,54 @@ void Game::render(Renderer_2D& renderer)
     hp_bar->render(renderer);
     for(auto& anim: animations)
         renderer.render(anim.getSprite());
+}
+
+void Game::doCollisions()
+{
+    // TO DO: from all collisions with ball generate one position reaction vector
+
+    // ball bottom line
+    if(ball.position.y > bottom_line)
+    {
+        ball.reset();
+        hp_bar->loseLife(*this);
+    }
+    // ball paddle
+    {
+        auto coll = ballRectCollision(ball, paddle);
+        if(coll.isCollision)
+        {
+            ball.isImmune_to_paddle_ = 0.5f;
+            paddle.reflectVEL(coll.penetration);
+        }
+    }
+    // ball bricks
+    {
+        for(auto& brick: bricks)
+        {
+            auto coll = ballRectCollision(ball, brick);
+            if(coll.isCollision)
+            {
+                reflectVel(ball, coll.penetration);
+            }
+        }
+    }
+    // paddle brick index 1 and 2
+    {
+        for(std::size_t i = 1; i < 3; ++i)
+        {
+            auto coll = rectRectCollision(paddle, bricks[i]);
+            if(coll.isCollision)
+            {
+                paddle.velocity = glm::vec2(0.f, 0.f);
+                if(paddle.ball->isStuck_)
+                    ball.position += paddle.prevPos - paddle.position;
+
+                paddle.position = paddle.prevPos;
+            }
+        }
+    }
+    // next collisions
 }
 
 void Game::update(float frameTime, PostProcessor&)

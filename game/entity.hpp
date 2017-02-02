@@ -42,6 +42,12 @@ public:
     glm::vec2 velocity;
     bool glow;
     glm::vec4 color;
+
+protected:
+    void move(float dt)
+    {
+        position += dt * velocity;
+    }
 };
 
 #endif // ENTITY_HPP

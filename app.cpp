@@ -89,7 +89,7 @@ App::App()
     std::cout << "renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "gl version: " << glGetString(GL_VERSION) << std::endl;
 
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowFocusCallback(window, window_focus_callback);

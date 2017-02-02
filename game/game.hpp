@@ -20,6 +20,8 @@ public:
     virtual void update(float frameTime, PostProcessor& postProccesor) override;
     void render(Renderer_2D& renderer) override;
 
+    void doCollisions();
+
     glm::mat4 projection;
     Texture background_tex;
     Texture bricks_tex;
