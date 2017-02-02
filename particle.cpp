@@ -177,7 +177,7 @@ void ParticleGenerator::update(float dt)
     if(life > 0.f)
         life -= dt;
 
-    while(accumulator >= spawnTime && life > 0.f)
+    while(accumulator >= spawnTime && (life <= -1000.f || life > 0.f))
     {
         updateVboInstance(spawnParticle());
         accumulator -= spawnTime;
@@ -186,7 +186,7 @@ void ParticleGenerator::update(float dt)
 
 bool ParticleGenerator::isActive() const
 {
-    return life <= -1000 || (life > 0 || lastActive != -1);
+    return (life <= -1000.f || (life < 0.f && lastActive != -1) || life > 0.f);
 }
 
 const glm::vec2& ParticleGenerator::getPosition() const

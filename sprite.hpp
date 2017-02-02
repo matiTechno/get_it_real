@@ -8,6 +8,7 @@ class Texture;
 struct Sprite
 {
     Sprite():
+        position(0.f, 0.f),
         rotation(0.f),
         color(255.f, 255.f, 255.f, 1.f),
         texture(nullptr),

@@ -21,7 +21,14 @@ SOURCES += main.cpp \
     text.cpp \
     menu.cpp \
     particle.cpp \
-    game/game.cpp
+    game/game.cpp \
+    game/paddle.cpp \
+    game/ball.cpp \
+    game/brick.cpp \
+    game/animation.cpp \
+    game/entity.cpp \
+    game/healthbar.cpp \
+    game/animentity.cpp
 
 HEADERS += \
     glad/glad.h \
@@ -39,4 +46,11 @@ HEADERS += \
     menu.hpp \
     soundsystem.hpp \
     particle.hh \
-    game/game.hpp
+    game/game.hpp \
+    game/entity.hpp \
+    game/paddle.hpp \
+    game/ball.hpp \
+    game/brick.hpp \
+    game/animation.hh \
+    game/healthbar.hpp \
+    game/animentity.hpp

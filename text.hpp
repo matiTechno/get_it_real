@@ -17,6 +17,7 @@ public:
 
     void setScale(float scale);
     void setText(const std::string& text);
+    const std::string& getText() const;
     const glm::vec2& getSize() const;
 
     glm::vec4 color;

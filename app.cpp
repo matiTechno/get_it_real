@@ -93,7 +93,6 @@ App::App()
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowFocusCallback(window, window_focus_callback);
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -194,7 +193,6 @@ bool App::handleMenus()
     case MenuName::LoseScreen: menus.push_back(std::make_unique<LoseScreen>(fbSize));
         break;
     case MenuName::WinScreen: menus.push_back(std::make_unique<WinScreen>(fbSize));
-        break;
     }
     if(menus.empty())
     {

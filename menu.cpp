@@ -26,7 +26,7 @@ Intro::Intro(const glm::vec2& fbSize):
 
     SoundSystem::playIntroMusic(true);
 
-    PData pdata{true, glm::vec2(2, 5), glm::vec4(255.f, 0.f, 255.f, 1.f), glm::vec4(255.f, 0.f, 255.f, 1.f),
+    PData pdata{true, glm::vec2(2, 5), glm::vec4(0.f, 0.f, 0.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
                 glm::vec2(0.5f, 4.f), nullptr, glm::vec4(-50.f, 50.f, 50.f, -50.f), glm::vec4(-50.f, 50.f, 50.f, -50.f),
                 nullptr};
 
@@ -65,7 +65,7 @@ void Intro::update(float frameTime, PostProcessor& postProccesor)
     generator->update(frameTime);
 }
 
-void Intro::render(Renderer_2D& renderer) const
+void Intro::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     renderer.render(*text);
@@ -140,7 +140,7 @@ void MainMenu::processInput(const Input<int, std::hash<int>>& keys)
     options[current_option]->bloom = true;
 }
 
-void MainMenu::render(Renderer_2D& renderer) const
+void MainMenu::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     for(auto& option: options)
@@ -183,7 +183,7 @@ Pause::Pause(const glm::vec2& fbSize):
     }
 
     bigbb = glm::vec2(rightX - leftX + 40.f, sizeY + 40.f);
-    sprite.color = glm::vec4(0.f, 0.f, 0.f, 1.f);
+    sprite.color = glm::vec4(0.f, 0.f, 0.f, 0.7f);
     sprite.bloom = false;
     sprite.size = bigbb;
     sprite.position = glm::vec2(leftX - 20.f, options[0]->position.y - 20.f);
@@ -228,10 +228,16 @@ void Pause::processInput(const Input<int, std::hash<int>>& keys)
         }
         SoundSystem::playClick();
     }
+    if(keys.wasPressed(GLFW_KEY_ESCAPE))
+    {
+        isDead = true;
+        new_menu = MenuName::Game;
+    }
+
     options[current_option]->bloom = true;
 }
 
-void Pause::render(Renderer_2D& renderer) const
+void Pause::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     renderer.render(sprite);
@@ -309,7 +315,7 @@ void NewGameMenu::processInput(const Input<int, std::hash<int>>& keys)
     options[current_option]->bloom = true;
 }
 
-void NewGameMenu::render(Renderer_2D& renderer) const
+void NewGameMenu::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     for(auto& option: options)
@@ -328,11 +334,11 @@ WinScreen::WinScreen(const glm::vec2& fbSize):
 
     text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);
 
-    PData pdata{true, glm::vec2(1, 3), glm::vec4(100.f, 100.f, 255.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
+    PData pdata{true, glm::vec2(1, 3), glm::vec4(0.f, 0.f, 255.f, 1.f), glm::vec4(0.f, 0.f, 255.f, 1.f),
                 glm::vec2(0.5f, 4.f), nullptr, glm::vec4(0.f, 100.f, 0.f, 100.f), glm::vec4(0.f, 0.f, 0.f, 0.f),
                 nullptr};
 
-    generator = std::make_unique<ParticleGenerator>(0.001f, glm::vec2(0.f, 0.f), scene_time,
+    generator = std::make_unique<ParticleGenerator>(0.0005f, glm::vec2(0.f, 0.f), scene_time,
                                                     glm::vec4(0.f, -50.f, fbSize.x, fbSize.y + 50.f),
                                                     false, GL_SRC_ALPHA, GL_ONE, pdata);
 }
@@ -351,7 +357,7 @@ void WinScreen::update(float frameTime, PostProcessor&)
     text->color.a = (scene_time - scene_time_left) / scene_time;
 }
 
-void WinScreen::render(Renderer_2D& renderer) const
+void WinScreen::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     renderer.render(*generator);
@@ -370,11 +376,12 @@ LoseScreen::LoseScreen(const glm::vec2& fbSize):
 
     text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);
 
-    PData pdata{true, glm::vec2(1, 3), glm::vec4(255.f, 0.f, 0.f, 1.f), glm::vec4(255.f, 100.f, 0.f, 1.f),
+    PData pdata{true, glm::vec2(1, 3), glm::vec4(255.f, 0.f, 0.f, 1.f), glm::vec4(255.f, 0.f, 0.f, 1.f),
                 glm::vec2(0.5f, 4.f), nullptr, glm::vec4(0.f, 100.f, 0.f, 100.f), glm::vec4(0.f, 0.f, 0.f, 0.f),
                 nullptr};
 
-    generator = std::make_unique<ParticleGenerator>(0.001f, glm::vec2(0.f, 0.f), scene_time, glm::vec4(0.f, -50.f, fbSize.x, fbSize.y + 50.f),
+    generator = std::make_unique<ParticleGenerator>(0.0005f, glm::vec2(0.f, 0.f), scene_time,
+                                                    glm::vec4(0.f, -50.f, fbSize.x, fbSize.y + 50.f),
                                                     false, GL_SRC_ALPHA, GL_ONE, pdata);
 }
 
@@ -392,7 +399,7 @@ void LoseScreen::update(float frameTime, PostProcessor&)
     text->color.a = (scene_time - scene_time_left) / scene_time;
 }
 
-void LoseScreen::render(Renderer_2D& renderer) const
+void LoseScreen::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     renderer.render(*generator);

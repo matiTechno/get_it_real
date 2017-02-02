@@ -33,7 +33,7 @@ public:
 
     virtual void processInput(const Input<int, std::hash<int>>& keys){(void)keys;}
     virtual void update(float frameTime, PostProcessor& postProccesor){(void)frameTime;(void)postProccesor;}
-    virtual void render(Renderer_2D& renderer) const = 0;
+    virtual void render(Renderer_2D& renderer) = 0;
     bool popMenu() const
     {
         return isDead;
@@ -62,7 +62,7 @@ public:
 
     void processInput(const Input<int, std::hash<int>>& keys) override;
     void update(float frameTime, PostProcessor& postProccesor) override;
-    void render(Renderer_2D& renderer) const override;
+    void render(Renderer_2D& renderer) override;
 
 private:
     std::unique_ptr<Text> text;
@@ -79,7 +79,7 @@ public:
     MainMenu(const glm::vec2& fbSize);
 
     void processInput(const Input<int, std::hash<int>>& keys) override;
-    void render(Renderer_2D& renderer) const override;
+    void render(Renderer_2D& renderer) override;
 
 private:
     std::vector<std::unique_ptr<Text>> options;
@@ -94,7 +94,7 @@ public:
     Pause(const glm::vec2& fbSize);
 
     void processInput(const Input<int, std::hash<int>>& keys) override;
-    void render(Renderer_2D& renderer) const override;
+    void render(Renderer_2D& renderer) override;
 
 private:
     std::vector<std::unique_ptr<Text>> options;
@@ -111,7 +111,7 @@ public:
     NewGameMenu(const glm::vec2& fbSize);
 
     void processInput(const Input<int, std::hash<int>>& keys) override;
-    void render(Renderer_2D& renderer) const override;
+    void render(Renderer_2D& renderer) override;
 
 private:
 
@@ -127,7 +127,7 @@ public:
     WinScreen(const glm::vec2& fbSize);
 
     void update(float frameTime, PostProcessor& postProccesor) override;
-    void render(Renderer_2D& renderer) const override;
+    void render(Renderer_2D& renderer) override;
 
 private:
     std::unique_ptr<Text> text;
@@ -143,7 +143,7 @@ public:
     LoseScreen(const glm::vec2& fbSize);
 
     void update(float frameTime, PostProcessor& postProccesor) override;
-    void render(Renderer_2D& renderer) const override;
+    void render(Renderer_2D& renderer) override;
 
 private:
     std::unique_ptr<Text> text;

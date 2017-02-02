@@ -34,6 +34,11 @@ void Text::setText(const std::string& text)
     findSize();
 }
 
+const std::string& Text::getText() const
+{
+    return text;
+}
+
 const glm::vec2& Text::getSize() const
 {
     return size;

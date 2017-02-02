@@ -142,7 +142,7 @@ Renderer_2D::Renderer_2D()
                         "void main()\n"
                         "{\n"
                         "if(texture_b)\n"
-                        "color = vec4(1, 1, 1, texture(sampl, texCoord).r) * spriteColor;\n"
+                        "color = texture(sampl, texCoord) * spriteColor;\n"
                         "else\n"
                         "color = spriteColor;\n"
                         "if(bloom)"
