@@ -5,6 +5,8 @@
 
 enum class Brick_type
 {
+    wall,
+    gone,
     one_hit,
     solid,
     two_hit_effect

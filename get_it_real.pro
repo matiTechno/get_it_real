@@ -29,7 +29,8 @@ SOURCES += main.cpp \
     game/entity.cpp \
     game/healthbar.cpp \
     game/animentity.cpp \
-    game/collisions.cpp
+    game/collisions.cpp \
+    game/en_text.cpp
 
 HEADERS += \
     glad/glad.h \
@@ -55,4 +56,5 @@ HEADERS += \
     game/animation.hh \
     game/healthbar.hpp \
     game/animentity.hpp \
-    game/collisions.hpp
+    game/collisions.hpp \
+    game/en_text.hpp

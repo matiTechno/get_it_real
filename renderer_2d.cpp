@@ -71,7 +71,7 @@ Renderer_2D::Renderer_2D()
                     "if(bloom)"
                     "color_bloom = color;"
                     "else\n"
-                    "color_bloom = vec4(0, 0, 0, 1);"
+                    "color_bloom = vec4(0, 0, 0, 0);"
                     "}");
 
         shader_texture = std::make_unique<Shader>(vs_source, fs_source);
@@ -89,7 +89,7 @@ Renderer_2D::Renderer_2D()
                     "if(bloom)"
                     "color_bloom = color;"
                     "else\n"
-                    "color_bloom = vec4(0, 0, 0, 1);"
+                    "color_bloom = vec4(0, 0, 0, 0);"
                     "}");
 
         shader_rect = std::make_unique<Shader>(vs_source, fs_source);
@@ -109,7 +109,7 @@ Renderer_2D::Renderer_2D()
                         "if(bloom)"
                         "color_bloom = color;"
                         "else\n"
-                        "color_bloom = vec4(0, 0, 0, 1);"
+                        "color_bloom = vec4(0, 0, 0, 0);"
                         "}");
 
             shader_font = std::make_unique<Shader>(vs_source, fs_source);
@@ -148,7 +148,7 @@ Renderer_2D::Renderer_2D()
                         "if(bloom)"
                         "color_bloom = color;"
                         "else\n"
-                        "color_bloom = vec4(0, 0, 0, 1);"
+                        "color_bloom = vec4(0, 0, 0, 0);"
                         "}");
 
             shader_particle = std::make_unique<Shader>(vs_source, fs_source);

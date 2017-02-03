@@ -169,7 +169,9 @@ bool App::handleMenus()
             menus.pop_back();
         }
         else
+        {
             menus.pop_back();
+        }
     }
 
     if(!menus.empty())
@@ -193,6 +195,8 @@ bool App::handleMenus()
     case MenuName::LoseScreen: menus.push_back(std::make_unique<LoseScreen>(fbSize));
         break;
     case MenuName::WinScreen: menus.push_back(std::make_unique<WinScreen>(fbSize));
+        break;
+    case MenuName::NewGame_from_pause: menus.push_back(std::make_unique<Game>(fbSize));
     }
     if(menus.empty())
     {
@@ -205,7 +209,6 @@ bool App::handleMenus()
 void App::update(float frameTime)
 {
     menus.back()->update(frameTime, *postProcessor);
-    postProcessor->update(frameTime);
 }
 
 void App::render()

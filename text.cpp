@@ -24,8 +24,10 @@ Text::Text(const glm::vec4& color, bool bloom, const glm::vec2& position, const 
 
 void Text::setScale(float scale)
 {
+    glm::vec2 middle = position + size / 2.f;
     this->scale = scale;
     findSize();
+    position = middle - size / 2.f;
 }
 
 void Text::setText(const std::string& text)

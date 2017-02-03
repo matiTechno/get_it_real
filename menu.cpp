@@ -63,6 +63,7 @@ void Intro::update(float frameTime, PostProcessor& postProccesor)
     }
 
     generator->update(frameTime);
+    postProccesor.update(frameTime);
 }
 
 void Intro::render(Renderer_2D& renderer)
@@ -156,6 +157,8 @@ Pause::Pause(const glm::vec2& fbSize):
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "resume"));
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
+                                             font, 1.f, "new game"));
+    options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "main menu"));
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "quit"));
@@ -216,12 +219,17 @@ void Pause::processInput(const Input<int, std::hash<int>>& keys)
             isDead = true;
             new_menu = MenuName::Game;
         }
-        else if(current_option == 1)
+        if(current_option == 1)
+        {
+            isDead = true;
+            new_menu = MenuName::NewGame_from_pause;
+        }
+        else if(current_option == 2)
         {
             isDead = true;
             new_menu = MenuName::MainMenu;
         }
-        else if(current_option == 2)
+        else if(current_option == 3)
         {
             isDead = true;
             new_menu = MenuName::None;

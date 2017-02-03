@@ -9,19 +9,28 @@ Game::Game(const glm::vec2& fbSize):
     Menu(MenuName::Game),
     background_tex("res/background_Jerom.png"),
     bricks_tex("res/breakout_pieces.png"),
-    ball_tex("res/ball_tex.png"),
     wall_texture("res/sci-fi-platformer-tiles-32x32-extension.png"),
     fire_tex("res/explosion00.png"),
     heart_tex("res/heart.png"),
     max_frame_time(0.5f),
     time_passed(0.f),
     accumulator(0.f),
-    dt_update(0.01666f)
+    dt_update(0.01666f),
+    ball_drop_anim(1.f, loadTexCoords("res/effect_hit_bott.sprites", 0.03f), false, Origin::bottom),
+    tex_hit_bott("res/effect_hit_bott.png"),
+    ball_hit_paddle_anim(0.75f, loadTexCoords("res/effect_explo1.sprites", 0.06f), false, Origin::middle),
+    tex_paddle_hit("res/effect_explo1.png"),
+    more_br_pieces("res/more_breakout_pieces.png"),
+    tex_gen_ball("res/smoke.png"),
+    brick_explo21(1.f, loadTexCoords("res/explosion21.sprites", 0.05f), false, Origin::middle),
+    explo21("res/Explosion21.png"),
+    font(Renderer_2D::loadFont("res/neuropolxrg.ttf", 20))
 {
     std::random_device rd;
     rn_engine.seed(rd());
 
     glm::vec2 projSize(640.f, 480.f);
+    this->projSize = projSize;
     projection = glm::ortho(0.f, projSize.x, projSize.y, 0.f);
     assert(projSize.x / projSize.y == fbSize.x / fbSize.y);
 
@@ -40,7 +49,7 @@ Game::Game(const glm::vec2& fbSize):
         brick.texCoords = glm::vec4(0, 1312, 64, 32);
         brick.position = glm::vec2(0.f, 0.f);
         brick.size = glm::vec2(projSize.x, 30.f);
-        brick.b_type = Brick_type::solid;
+        brick.b_type = Brick_type::wall;
         bricks.push_back(std::move(brick));
     }
     {
@@ -50,7 +59,7 @@ Game::Game(const glm::vec2& fbSize):
         brick.color.a = 0.7f;
         brick.texCoords = glm::vec4(96, 1280, 32, 64);
         brick.size = glm::vec2(30.f, projSize.y - bricks[0].size.y);
-        brick.b_type = Brick_type::solid;
+        brick.b_type = Brick_type::wall;
         bricks.push_back(std::move(brick));
     }
     {
@@ -60,7 +69,7 @@ Game::Game(const glm::vec2& fbSize):
         brick.texture = &wall_texture;
         brick.texCoords = glm::vec4(96, 1280, 32, 64);
         brick.size = glm::vec2(30.f, projSize.y - bricks[0].size.y);
-        brick.b_type = Brick_type::solid;
+        brick.b_type = Brick_type::wall;
         bricks.push_back(std::move(brick));
     }
 
@@ -71,13 +80,13 @@ Game::Game(const glm::vec2& fbSize):
     paddle.minReflectAngle = glm::pi<float>() / 6.f;
     paddle.velMod = 220.f;
 
-    ball.texture = &ball_tex;
+    ball.texture = &more_br_pieces;
     ball.paddle = &paddle;
-    ball.texCoords = glm::vec4(0.f, 0.f, ball.texture->getSize().x, ball.texture->getSize().y);
+    ball.texCoords = glm::vec4(784, 608, 16, 16);
     ball.color = glm::vec4(255.f, 0.f, 255.f, 1.f);
     ball.glow = true;
     ball.size = glm::vec2(20, 20);
-    ball.velocity = glm::vec2(0.f, 300.f);
+    ball.velocity = glm::vec2(0.f, 200.f);
     ball.reset();
 
     paddle.ball = &ball;
@@ -104,7 +113,7 @@ Game::Game(const glm::vec2& fbSize):
             brick.b_type = Brick_type::one_hit;
             brick.texCoords = glm::vec4(8, 88, 32, 16);
         }
-        else if(num < 9)
+        else if(num < 8)
         {
             brick.b_type = Brick_type::solid;
             brick.texCoords = glm::vec4(264, 28, 32, 16);
@@ -116,6 +125,7 @@ Game::Game(const glm::vec2& fbSize):
         }
         bricks.push_back(std::move(brick));
     }
+    // fire glow base
     {
         PData pdata{true, glm::vec2(5, 10), glm::vec4(255.f, 255.f, 255.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
                     glm::vec2(0.5f, 1.f), &fire_tex, glm::vec4(0.f, -10.f, 0.f, -50.f), glm::vec4(0.f, 0.f, 0.f, -10.f),
@@ -125,16 +135,38 @@ Game::Game(const glm::vec2& fbSize):
                 glm::vec4(0.f, 0.f, projSize.x - 2 * bricks[1].size.x, projSize.y),
                 false, GL_SRC_ALPHA, GL_ONE, pdata);
     }
+    // fire flying particles
+    {
+        PData pdata{true, glm::vec2(3.f, 7.f), glm::vec4(255.f, 255.f, 255.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
+                    glm::vec2(6.f, 12.f), &tex_gen_ball, glm::vec4(0.f, -30.f, 0.f, -60.f), glm::vec4(10.f, 10.f, -10.f, -10.f),
+                    nullptr};
+
+        generators.emplace_back(0.3f, glm::vec2(bricks[1].size.x, projSize.y), -1000.f,
+                glm::vec4(0.f, 0.f, projSize.x - 2 * bricks[1].size.x, projSize.y),
+                false, GL_SRC_ALPHA, GL_ONE, pdata);
+    }
     {
         Animation anim(1.5f, loadTexCoords("res/heart.sprites", std::vector<float>{0.4f, 0.1f, 0.1f}),
                        true, Origin::middle);
 
         AnimEntity anime(glm::vec2(0.f, 0.f), heart_tex, anim);
-        anime.color.a = 0.7f;
-        hp_bar = std::make_unique<HealthBar>(glm::vec2(bricks[1].size.x + 10.f, projSize.y - 20.f - anime.size.y), anime);
+        anime.color.a = 0.9f;
+        hp_bar = std::make_unique<HealthBar>(glm::vec2(bricks[1].size.x + 10.f, bricks[0].size.y + 10.f), anime);
         hp_bar->addLife();
         hp_bar->addLife();
         hp_bar->addLife();
+    }
+    {
+        PData pdata{false, glm::vec2(10, 20), glm::vec4(0.f, 255.f, 0.f, 0.1f), glm::vec4(100.f, 255.f, 100.f, 0.3f),
+                    glm::vec2(0.3f, 0.8f), &tex_gen_ball, glm::vec4(0.f, 0.f, 0.f, 0.f), glm::vec4(-20.f, -20.f, 20.f, 20.f),
+                    nullptr};
+
+        ball_parti = std::make_unique<ParticleGenerator>(0.01f, glm::vec2(0.f, 0.f), -1000.f,
+                                                         glm::vec4(-ball.size / 2.f, ball.size),
+                                                         true, GL_SRC_ALPHA, GL_ONE, pdata, [this](float)
+        {
+            ball_parti->setPosition(this->ball.position + this->ball.getRadius());
+        });
     }
 }
 
@@ -156,7 +188,7 @@ void Game::processInput(const Input<int, std::hash<int>>& keys)
     {
         paddle.velocity.x += paddle.velMod;
     }
-    if(keys.wasPressed(GLFW_KEY_SPACE) || keys.isPressed(GLFW_KEY_SPACE))
+    if(keys.wasPressed(GLFW_KEY_SPACE))
     {
         ball.isStuck_ = false;
     }
@@ -164,23 +196,19 @@ void Game::processInput(const Input<int, std::hash<int>>& keys)
 
 void Game::update_logic(float dt_sec)
 {
-    //1
+    //1 particles
     for(auto& generator: generators)
     {
         generator.update(dt_sec);
     }
     generators.erase(std::remove_if(generators.begin(), generators.end(),
                                     [](ParticleGenerator& gen){return !gen.isActive();}), generators.end());
-    //2
+    ball_parti->update(dt_sec);
+
+    //2 hp bar
     hp_bar->update(dt_sec);
 
-    if(hp_bar->isDead())
-    {
-        isDead = true;
-        new_menu = MenuName::LoseScreen;
-    }
-
-    //3
+    //3 animations
     for(auto& anim: animations)
         anim.update(dt_sec);
 
@@ -191,11 +219,55 @@ void Game::update_logic(float dt_sec)
                          return false;
                      }), animations.end());
 
+    //4 ball && paddle
     ball.update(dt_sec);
     paddle.update(dt_sec);
 
-    //4 LAST AFTER MOVING ALL ENTITIES
+    //5 bricks
+
+    bricks.erase(std::remove_if(bricks.begin(), bricks.end(),
+                                [](Brick& brick){
+                     if(brick.b_type == Brick_type::gone)
+                     return true;
+                     return false;
+                 }), bricks.end());
+
+    // 7 texts
+    for(auto& text: t_entities)
+    {
+        text->update(dt_sec);
+    }
+    t_entities.erase(std::remove_if( t_entities.begin(),  t_entities.end(),
+                                     [](std::unique_ptr<Text_Entity>& t){
+                         if(t->life <= 0.f)
+                         return true;
+                         return false;
+                     }),  t_entities.end());
+
+    //prev_last: collisions
     doCollisions();
+
+    //last: win or loose
+    if(hp_bar->isDead())
+    {
+        isDead = true;
+        new_menu = MenuName::LoseScreen;
+    }
+
+    bool lvl_done = true;
+    for(auto& brick: bricks)
+    {
+        if(brick.b_type != Brick_type::solid && brick.b_type != Brick_type::wall)
+        {
+            lvl_done = false;
+            break;
+        }
+    }
+    if(lvl_done)
+    {
+        isDead = true;
+        new_menu = MenuName::WinScreen;
+    }
 }
 
 void Game::render(Renderer_2D& renderer)
@@ -208,28 +280,45 @@ void Game::render(Renderer_2D& renderer)
     renderer.render(ball.getSprite());
     for(auto& generator: generators)
         renderer.render(generator);
-    hp_bar->render(renderer);
+    renderer.render(*ball_parti);
     for(auto& anim: animations)
         renderer.render(anim.getSprite());
+    hp_bar->render(renderer);
+    for(auto& text: t_entities)
+        renderer.render(text->text);
 }
 
 void Game::doCollisions()
 {
-    // TO DO: from all collisions with ball generate one position reaction vector
+    // ball pen vec
+    glm::vec2 ball_pen(0.f, 0.f);
 
     // ball bottom line
     if(ball.position.y > bottom_line)
     {
-        ball.reset();
+        animations.emplace_back(ball.position, tex_hit_bott, ball_drop_anim);
         hp_bar->loseLife(*this);
+
+        Min_hp_t t(font, projSize);
+        t_entities.push_back(std::make_unique<Min_hp_t>(t));
+
+        ball.reset();
     }
     // ball paddle
     {
         auto coll = ballRectCollision(ball, paddle);
         if(coll.isCollision)
         {
-            ball.isImmune_to_paddle_ = 0.5f;
-            paddle.reflectVEL(coll.penetration);
+            if(!ball.isImmune_to_paddle())
+            {
+                ball.isImmune_to_paddle_ = 0.3f;
+                paddle.reflectVEL(coll.penetration);
+
+                if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
+                    ball_pen.x = coll.pene_vec.x;
+                if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
+                    ball_pen.y = coll.pene_vec.y;
+            }
         }
     }
     // ball bricks
@@ -240,6 +329,25 @@ void Game::doCollisions()
             if(coll.isCollision)
             {
                 reflectVel(ball, coll.penetration);
+                if(brick.b_type == Brick_type::one_hit)
+                {
+                    animations.emplace_back(coll.point, tex_paddle_hit, ball_hit_paddle_anim);
+                    brick.b_type = Brick_type::gone;
+                }
+                else if(brick.b_type == Brick_type::solid)
+                {
+
+                }
+                else if(brick.b_type == Brick_type::two_hit_effect)
+                {
+                    animations.emplace_back(coll.point, explo21, brick_explo21);
+                    brick.b_type = Brick_type::gone;
+                }
+
+                if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
+                    ball_pen.x = coll.pene_vec.x;
+                if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
+                    ball_pen.y = coll.pene_vec.y;
             }
         }
     }
@@ -259,6 +367,9 @@ void Game::doCollisions()
         }
     }
     // next collisions
+
+    // now correct ball position
+    ball.position -= ball_pen;
 }
 
 void Game::update(float frameTime, PostProcessor&)

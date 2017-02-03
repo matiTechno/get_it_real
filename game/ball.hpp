@@ -14,9 +14,9 @@ public:
         return size.x / 2.f;
     }
 
-    float isImmune_to_paddle()
+    bool isImmune_to_paddle()
     {
-        return isImmune_to_paddle_ >= 0.f;
+        return isImmune_to_paddle_ > 0.f;
     }
 
     void reset();

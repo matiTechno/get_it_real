@@ -49,7 +49,8 @@ Collision rectRectCollision(const Entity& rect1, const Entity& rect2)
     glm::vec2 P = R2 + R2P;
     glm::vec2 R1P = P - R1;
 
-    return Collision{x && y, vecDir(R1P), P};
+    // vec_pene not implemented now (no need)
+    return Collision{x && y, vecDir(R1P), P, glm::vec2(0.f, 0.f)};
 }
 
 Collision ballRectCollision(const Ball& ball, const Entity& rect)
@@ -65,7 +66,7 @@ Collision ballRectCollision(const Ball& ball, const Entity& rect)
     glm::vec2 P = R + RP;
     glm::vec2 BP = P - B;
 
-    return Collision{glm::length(BP) < ball.getRadius(), vecDir(BP), P};
+    return Collision{glm::length(BP) < ball.getRadius(), vecDir(BP), P, glm::normalize(BP) * (ball.getRadius() - glm::length(BP))};
 }
 
 void reflectVel(Ball& ball, Dir penDir)

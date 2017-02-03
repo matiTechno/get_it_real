@@ -22,7 +22,8 @@ enum class MenuName
     Pause,
     NewGameMenu,
     LoseScreen,
-    WinScreen
+    WinScreen,
+    NewGame_from_pause
 };
 
 class Menu

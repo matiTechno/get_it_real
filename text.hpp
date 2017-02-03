@@ -15,6 +15,10 @@ public:
     Text(const glm::vec4& color, bool bloom, const glm::vec2& position, const Font& font,
          float scale, const std::string& text);
 
+    float getScale() const
+    {
+        return scale;
+    }
     void setScale(float scale);
     void setText(const std::string& text);
     const std::string& getText() const;
