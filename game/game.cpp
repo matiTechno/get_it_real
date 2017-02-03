@@ -241,7 +241,8 @@ void Game::update_logic(float dt_sec)
 
     //4 ball && paddle
     ball.update(dt_sec);
-    ball.velocity += 0.5f * dt_sec;
+    if(!start)
+        ball.velocity += glm::normalize(ball.velocity) * 0.5f * dt_sec;
     paddle.update(dt_sec);
 
     //5 bricks
