@@ -24,10 +24,13 @@ Game::Game(const glm::vec2& fbSize):
     tex_gen_ball("res/smoke.png"),
     brick_explo21(1.f, loadTexCoords("res/explosion21.sprites", 0.05f), false, Origin::middle),
     explo21("res/Explosion21.png"),
-    font(Renderer_2D::loadFont("res/neuropolxrg.ttf", 20))
+    font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 40))
 {
     std::random_device rd;
     rn_engine.seed(rd());
+
+    combo_counter.first = 0;
+    combo_counter.second = 0.f;
 
     glm::vec2 projSize(640.f, 480.f);
     this->projSize = projSize;
@@ -150,7 +153,7 @@ Game::Game(const glm::vec2& fbSize):
                        true, Origin::middle);
 
         AnimEntity anime(glm::vec2(0.f, 0.f), heart_tex, anim);
-        anime.color.a = 0.9f;
+        anime.color.a = 0.8f;
         hp_bar = std::make_unique<HealthBar>(glm::vec2(bricks[1].size.x + 10.f, bricks[0].size.y + 10.f), anime);
         hp_bar->addLife();
         hp_bar->addLife();
@@ -167,6 +170,18 @@ Game::Game(const glm::vec2& fbSize):
         {
             ball_parti->setPosition(this->ball.position + this->ball.getRadius());
         });
+    }
+    {
+        Text_Entity t(font);
+        t.text.setText("<- / A   move left\n"
+                       "-> / D   move right\n"
+                       "SPACE   release ball\n"
+                       "ESC       pause");
+        t.text.position = fbSize / 2.f - t.text.getSize() / 2.f + glm::vec2(0.f, 60.f);
+        t.text.bloom = true;
+        t.text.color = glm::vec4(0.f, 255.f, 255.f, 0.3f);
+        t.life = 10000000.f;
+        t_entities.push_back(std::make_unique<Text_Entity>(t));
     }
 }
 
@@ -191,6 +206,11 @@ void Game::processInput(const Input<int, std::hash<int>>& keys)
     if(keys.wasPressed(GLFW_KEY_SPACE))
     {
         ball.isStuck_ = false;
+        if(start)
+        {
+            start = false;
+            t_entities.erase(t_entities.begin());
+        }
     }
 }
 
@@ -221,6 +241,7 @@ void Game::update_logic(float dt_sec)
 
     //4 ball && paddle
     ball.update(dt_sec);
+    ball.velocity += 0.5f * dt_sec;
     paddle.update(dt_sec);
 
     //5 bricks
@@ -232,7 +253,7 @@ void Game::update_logic(float dt_sec)
                      return false;
                  }), bricks.end());
 
-    // 7 texts
+    //6 texts
     for(auto& text: t_entities)
     {
         text->update(dt_sec);
@@ -246,6 +267,19 @@ void Game::update_logic(float dt_sec)
 
     //prev_last: collisions
     doCollisions();
+
+    //combo_counter
+    if(combo_counter.second >= 0.f)
+        combo_counter.second -= dt_sec;
+    if(combo_counter.second < 0.f)
+    {
+        combo_counter.second = 0.f;
+        if(combo_counter.first > 1)
+        {
+            t_entities.push_back(std::make_unique<Combo_t>(paddle.position + paddle.size / 2.f - glm::vec2(0.f, 60.f), font, combo_counter.first));
+        }
+        combo_counter.first = 0;
+    }
 
     //last: win or loose
     if(hp_bar->isDead())
@@ -290,6 +324,7 @@ void Game::render(Renderer_2D& renderer)
 
 void Game::doCollisions()
 {
+    bool ball_was_coll_br = false;
     // ball pen vec
     glm::vec2 ball_pen(0.f, 0.f);
 
@@ -333,6 +368,10 @@ void Game::doCollisions()
                 {
                     animations.emplace_back(coll.point, tex_paddle_hit, ball_hit_paddle_anim);
                     brick.b_type = Brick_type::gone;
+
+                    // combo counter
+                    ball_was_coll_br = true;
+                    ++combo_counter.first;
                 }
                 else if(brick.b_type == Brick_type::solid)
                 {
@@ -342,12 +381,25 @@ void Game::doCollisions()
                 {
                     animations.emplace_back(coll.point, explo21, brick_explo21);
                     brick.b_type = Brick_type::gone;
+
+                    // combo counter
+                    ball_was_coll_br = true;
+                    ++combo_counter.first;
                 }
 
                 if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
                     ball_pen.x = coll.pene_vec.x;
                 if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
                     ball_pen.y = coll.pene_vec.y;
+                {
+                    PData pdata{true, glm::vec2(3, 8), glm::vec4(255.f, 0.f, 0.f, 1.f), glm::vec4(255.f, 100.f, 0.f, 1.f),
+                                glm::vec2(0.5f, 1.f), &tex_gen_ball, glm::vec4(60.f, 60.f, -60.f, -60.f),
+                                glm::vec4(-20.f, 80.f, 20.f, 80.f), nullptr};
+
+                    generators.emplace_back(0.001f, coll.point, 0.1f,
+                                            glm::vec4(-5.f, -5.f, 10.f, 10.f),
+                                            true, GL_SRC_ALPHA, GL_ONE, pdata);
+                }
             }
         }
     }
@@ -370,6 +422,9 @@ void Game::doCollisions()
 
     // now correct ball position
     ball.position -= ball_pen;
+
+    if(ball_was_coll_br)
+        combo_counter.second += 0.6f;
 }
 
 void Game::update(float frameTime, PostProcessor&)

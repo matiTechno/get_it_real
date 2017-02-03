@@ -8,14 +8,15 @@ class Text_Entity
 {
 public:
     Text_Entity(Font& font):
-        text(font)
+        text(font),
+        velocity(0.f, 0.f)
     {}
 
     virtual ~Text_Entity() = default;
-    glm::vec2 velocity;
     float life;
     virtual void update(float dt);
     Text text;
+    glm::vec2 velocity;
 
 private:
     virtual void custom_update(float dt)
@@ -32,10 +33,17 @@ public:
         text.position = proj_size / 2.f - text.getSize() / 2.f;
         life = 3.f;
         text.bloom = true;
+        text.color.a = 0.3f;
         velocity = glm::vec2(0.f, -30.f);
     }
 private:
     void custom_update(float) override;
+};
+
+class Combo_t: public Text_Entity
+{
+public:
+    Combo_t(const glm::vec2& coll_pos, Font& font, std::size_t count);
 };
 
 #endif // EN_TEXT_HPP

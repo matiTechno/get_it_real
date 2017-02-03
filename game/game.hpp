@@ -56,6 +56,8 @@ public:
     Texture explo21;
     Font font;
     std::vector<std::unique_ptr<Text_Entity>> t_entities;
+    std::pair<std::size_t, float> combo_counter;
+    bool start = true;
 
     void update_logic(float dt_sec);
 };
