@@ -18,7 +18,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     time_passed(0.f),
     //accumulator(0.f),
     //dt_update(0.01672f),
-    ball_drop_anim(1.f, loadTexCoords("res/effect_hit_bott.sprites", 0.03f), false, Origin::bottom),
+    ball_drop_anim(1.f, loadTexCoords("res/effect_hit_bott.sprites", 0.04f), false, Origin::bottom),
     tex_hit_bott("res/effect_hit_bott.png"),
     ball_hit_paddle_anim(0.75f, loadTexCoords("res/effect_explo1.sprites", 0.06f), false, Origin::middle),
     tex_paddle_hit("res/effect_explo1.png"),
@@ -280,6 +280,9 @@ void Game::update_logic(float dt_sec)
                          return false;
                      }),  t_entities.end());
 
+    // powerups
+    pw_system.update(dt_sec);
+
     //prev_last: collisions
     doCollisions();
 
@@ -335,6 +338,7 @@ void Game::render(Renderer_2D& renderer)
         renderer.render(brick.getSprite());
     renderer.render(paddle.getSprite());
     renderer.render(ball.getSprite());
+    pw_system.render(renderer);
     for(auto& generator: generators)
         renderer.render(generator);
     renderer.render(*ball_parti);
@@ -390,6 +394,8 @@ void Game::doCollisions()
             auto coll = ballRectCollision(ball, brick);
             if(coll.isCollision)
             {
+                // spawn powerup if brick destroyed
+
                 reflectVel(ball, coll.penetration);
                 if(brick.b_type == Brick_type::one_hit)
                 {
@@ -454,7 +460,45 @@ void Game::doCollisions()
             }
         }
     }
-    // next collisions
+    // ball powerups
+    {
+        for(auto& powerup: pw_system.powerups)
+        {
+            auto coll = ballRectCollision(ball, powerup);
+            if(coll.isCollision && powerup.immuneTime <= 0.f)
+            {
+                if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
+                    ball_pen.x = coll.pene_vec.x;
+                if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
+                    ball_pen.y = coll.pene_vec.y;
+
+                reflectVel(ball, coll.penetration);
+
+                // powerups code below
+                //...
+                //...
+                //... + spawn some particles / explo animation
+                powerup.isDead = true;
+            }
+        }
+    }
+
+    // paddle powwerups
+    {
+        for(auto& powerup: pw_system.powerups)
+        {
+            auto coll = rectRectCollision(paddle, powerup);
+            if(coll.isCollision)
+            {
+                // powerup code
+                //...
+                //...
+                //... + spawni some particles / explo animation
+                powerup.isDead = true;
+                // apply effect
+            }
+        }
+    }
 
     // now correct ball position
     ball.position -= ball_pen;

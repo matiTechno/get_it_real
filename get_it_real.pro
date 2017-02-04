@@ -30,7 +30,8 @@ SOURCES += main.cpp \
     game/healthbar.cpp \
     game/animentity.cpp \
     game/collisions.cpp \
-    game/en_text.cpp
+    game/en_text.cpp \
+    game/powerup.cpp
 
 HEADERS += \
     glad/glad.h \
@@ -57,4 +58,5 @@ HEADERS += \
     game/healthbar.hpp \
     game/animentity.hpp \
     game/collisions.hpp \
-    game/en_text.hpp
+    game/en_text.hpp \
+    game/powerup.hpp

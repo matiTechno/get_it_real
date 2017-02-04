@@ -12,6 +12,7 @@
 #include <game/healthbar.hpp>
 #include <game/en_text.hpp>
 #include <functional>
+#include <game/powerup.hpp>
 
 class Game: public Menu
 {
@@ -63,6 +64,7 @@ public:
     float shake_time;
     std::unique_ptr<int, std::function<void(int*)>> pp_effects;
     float black_out_t;
+    PowerUp_System pw_system;
 
     void update_logic(float dt_sec);
 };
