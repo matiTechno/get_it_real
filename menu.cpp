@@ -76,8 +76,10 @@ void Intro::render(Renderer_2D& renderer)
 MainMenu::MainMenu(const glm::vec2& fbSize):
     Menu(MenuName::MainMenu),
     projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
-    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
-    current_option(0)
+    font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 60)),
+    current_option(0),
+    tex("res/block1_Jerom.png"),
+    fbSize(fbSize)
 {
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
                                              font, 1.f, "start game"));
@@ -144,6 +146,15 @@ void MainMenu::processInput(const Input<int, std::hash<int>>& keys)
 void MainMenu::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
+    Sprite sprite;
+    sprite.bloom = true;
+    sprite.color = glm::vec4(166.f, 67.f, 33.f, 0.05f);
+    sprite.position = glm::vec2(0.f, 0.f);
+    sprite.size = fbSize;
+    sprite.texture = &tex;
+    sprite.texCoords = glm::vec4(0.f, 0.f, tex.getSize());
+    renderer.load_projection(projection);
+    renderer.render(sprite);
     for(auto& option: options)
         renderer.render(*option);
 }
@@ -151,7 +162,7 @@ void MainMenu::render(Renderer_2D& renderer)
 Pause::Pause(const glm::vec2& fbSize):
     Menu(MenuName::Pause),
     projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
-    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
+    font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 60)),
     current_option(0)
 {
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
@@ -257,7 +268,9 @@ void Pause::render(Renderer_2D& renderer)
 NewGameMenu::NewGameMenu(const glm::vec2& fbSize):
     Menu(MenuName::NewGameMenu),
     projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
-    font(Renderer_2D::loadFont("res/DejaVuSans.ttf", 60)),
+    font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 60)),
+    tex("res/block1_Jerom.png"),
+    fbSize(fbSize),
     current_option(0)
 {
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
@@ -326,6 +339,14 @@ void NewGameMenu::processInput(const Input<int, std::hash<int>>& keys)
 void NewGameMenu::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
+    Sprite sprite;
+    sprite.bloom = true;
+    sprite.color = glm::vec4(166.f, 67.f, 33.f, 0.05f);
+    sprite.position = glm::vec2(0.f, 0.f);
+    sprite.size = fbSize;
+    sprite.texture = &tex;
+    sprite.texCoords = glm::vec4(0.f, 0.f, tex.getSize());
+    renderer.render(sprite);
     for(auto& option: options)
         renderer.render(*option);
 }
@@ -337,7 +358,7 @@ WinScreen::WinScreen(const glm::vec2& fbSize):
     scene_time(5.f),
     scene_time_left(scene_time)
 {
-    text = std::make_unique<Text>(glm::vec4(100.f, 100.f, 255.f, 0.f), true, glm::vec2(),
+    text = std::make_unique<Text>(glm::vec4(0.f, 0.f, 255.f, 0.f), true, glm::vec2(),
                                   font, 1.f, "You Won!");
 
     text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);

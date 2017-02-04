@@ -87,6 +87,8 @@ private:
     glm::mat4 projection;
     Font font;
     std::size_t current_option;
+    Texture tex;
+    glm::vec2 fbSize;
 };
 
 class Pause: public Menu
@@ -115,10 +117,11 @@ public:
     void render(Renderer_2D& renderer) override;
 
 private:
-
     std::vector<std::unique_ptr<Text>> options;
     glm::mat4 projection;
     Font font;
+    Texture tex;
+    glm::vec2 fbSize;
     std::size_t current_option;
 };
 

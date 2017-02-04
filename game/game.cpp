@@ -143,12 +143,12 @@ Game::Game(const glm::vec2& fbSize, PostProcessor& pp):
     }
     // fire glow base
     {
-        PData pdata{true, glm::vec2(5, 10), glm::vec4(255.f, 255.f, 255.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
+        PData pdata{true, glm::vec2(2, 8), glm::vec4(255.f, 255.f, 255.f, 0.2f), glm::vec4(255.f, 255.f, 255.f, 1.f),
                     glm::vec2(0.5f, 1.f), &fire_tex, glm::vec4(0.f, -10.f, 0.f, -50.f), glm::vec4(0.f, 0.f, 0.f, -10.f),
                     nullptr};
 
-        generators.emplace_back(0.0001f, glm::vec2(bricks[1].size.x, projSize.y), -1000.f,
-                glm::vec4(0.f, 0.f, projSize.x - 2 * bricks[1].size.x, projSize.y),
+        generators.emplace_back(0.004f, glm::vec2(bricks[1].size.x, projSize.y), -1000.f,
+                glm::vec4(0.f, 0.f, projSize.x - 2 * bricks[1].size.x, 0.f),
                 false, GL_SRC_ALPHA, GL_ONE, pdata);
     }
     // fire flying particles
@@ -157,8 +157,8 @@ Game::Game(const glm::vec2& fbSize, PostProcessor& pp):
                     glm::vec2(6.f, 12.f), &tex_gen_ball, glm::vec4(0.f, -30.f, 0.f, -60.f), glm::vec4(10.f, 10.f, -10.f, -10.f),
                     nullptr};
 
-        generators.emplace_back(0.3f, glm::vec2(bricks[1].size.x, projSize.y), -1000.f,
-                glm::vec4(0.f, 0.f, projSize.x - 2 * bricks[1].size.x, projSize.y),
+        generators.emplace_back(1.5f, glm::vec2(bricks[1].size.x, projSize.y), -1000.f,
+                glm::vec4(0.f, 0.f, projSize.x - 2 * bricks[1].size.x, 0.f),
                 false, GL_SRC_ALPHA, GL_ONE, pdata);
     }
     {
