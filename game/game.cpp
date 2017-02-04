@@ -4,18 +4,20 @@
 #include <soundsystem.hpp>
 #include <input.hpp>
 #include <game/collisions.hpp>
+#include <postprocessor.hpp>
 
-Game::Game(const glm::vec2& fbSize):
+Game::Game(const glm::vec2& fbSize, PostProcessor& pp):
     Menu(MenuName::Game),
+    pp(pp),
     background_tex("res/background_Jerom.png"),
     bricks_tex("res/breakout_pieces.png"),
     wall_texture("res/sci-fi-platformer-tiles-32x32-extension.png"),
     fire_tex("res/explosion00.png"),
     heart_tex("res/heart.png"),
-    max_frame_time(0.5f),
+    max_frame_time(0.03f),
     time_passed(0.f),
-    accumulator(0.f),
-    dt_update(0.01666f),
+    //accumulator(0.f),
+    //dt_update(0.01672f),
     ball_drop_anim(1.f, loadTexCoords("res/effect_hit_bott.sprites", 0.03f), false, Origin::bottom),
     tex_hit_bott("res/effect_hit_bott.png"),
     ball_hit_paddle_anim(0.75f, loadTexCoords("res/effect_explo1.sprites", 0.06f), false, Origin::middle),
@@ -24,10 +26,17 @@ Game::Game(const glm::vec2& fbSize):
     tex_gen_ball("res/smoke.png"),
     brick_explo21(1.f, loadTexCoords("res/explosion21.sprites", 0.05f), false, Origin::middle),
     explo21("res/Explosion21.png"),
-    font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 40))
+    font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 40)),
+    shake_time(0.f)
 {
     std::random_device rd;
     rn_engine.seed(rd());
+
+    //    auto effect_cancel = [](void*)
+    //    {
+
+    //    };
+    //    pp_effects = std::make_unique<void, decltype(effect_cancel)>(nullptr, effect_cancel);
 
     combo_counter.first = 0;
     combo_counter.second = 0.f;
@@ -40,7 +49,7 @@ Game::Game(const glm::vec2& fbSize):
     bottom_line = projSize.y;
 
     background.size = projSize;
-    background.color = glm::vec4(166.f, 67.f, 33.f, 0.3f);
+    background.color = glm::vec4(166.f, 67.f, 33.f, 0.2f);
     background.texture = &background_tex;
     background.texCoords = glm::vec4(0.f, 0.f, background_tex.getSize().x, background_tex.getSize().y);
 
@@ -282,6 +291,10 @@ void Game::update_logic(float dt_sec)
         combo_counter.first = 0;
     }
 
+    //shake time
+    if(shake_time > 0.f)
+        shake_time -= dt_sec;
+
     //last: win or loose
     if(hp_bar->isDead())
     {
@@ -376,7 +389,16 @@ void Game::doCollisions()
                 }
                 else if(brick.b_type == Brick_type::solid)
                 {
+                    shake_time = 0.3f;
+                    {
+                        PData pdata{false, glm::vec2(5, 8), glm::vec4(0.f, 0.f, 0.f, 1.f), glm::vec4(50.f, 50.f, 50.f, 1.f),
+                                    glm::vec2(0.5f, 2.5f), &tex_gen_ball, glm::vec4(20.f, 20.f, -20.f, -20.f),
+                                    glm::vec4(0.f, 80.f, 0.f, 80.f), nullptr};
 
+                        generators.emplace_back(0.001f, brick.position + glm::vec2(20.f, brick.size.y), 0.3f,
+                                                glm::vec4(0.f, 0.f, brick.size.x - 40.f, 0.f),
+                                                false, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, pdata);
+                    }
                 }
                 else if(brick.b_type == Brick_type::two_hit_effect)
                 {
@@ -430,13 +452,19 @@ void Game::doCollisions()
 
 void Game::update(float frameTime, PostProcessor&)
 {
-    time_passed += frameTime;
     if(frameTime > max_frame_time)
         frameTime = max_frame_time;
-    accumulator += frameTime;
-    while(accumulator >= dt_update)
-    {
-        update_logic(dt_update);
-        accumulator -= dt_update;
-    }
+    time_passed += frameTime;
+    //accumulator += frameTime;
+    //while(accumulator >= dt_update)
+    //{
+    //update_logic(dt_update);
+    //accumulator -= dt_update;
+    //}
+    update_logic(frameTime);
+    pp.update(frameTime);
+    if(shake_time > 0.f)
+        pp.setShake(true);
+    else
+        pp.setShake(false);
 }

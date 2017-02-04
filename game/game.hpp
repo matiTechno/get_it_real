@@ -11,11 +11,12 @@
 #include <particle.hh>
 #include <game/healthbar.hpp>
 #include <game/en_text.hpp>
+#include <functional>
 
 class Game: public Menu
 {
 public:
-    Game(const glm::vec2& fbSize);
+    Game(const glm::vec2& fbSize, PostProcessor& pp);
 
     void processInput(const Input<int, std::hash<int>>& keys) override;
     virtual void update(float frameTime, PostProcessor& postProccesor) override;
@@ -23,6 +24,7 @@ public:
 
     void doCollisions();
 
+    PostProcessor& pp;
     glm::vec2 projSize;
     glm::mat4 projection;
     Texture background_tex;
@@ -33,8 +35,8 @@ public:
     Sprite background;
     float max_frame_time;
     float time_passed;
-    float accumulator;
-    float dt_update;
+    //float accumulator;
+    //float dt_update;
     float bottom_line;
     std::mt19937 rn_engine;
     Animation ball_drop_anim;
@@ -58,6 +60,8 @@ public:
     std::vector<std::unique_ptr<Text_Entity>> t_entities;
     std::pair<std::size_t, float> combo_counter;
     bool start = true;
+    float shake_time;
+    std::unique_ptr<void, std::function<void(void*)>> pp_effects;
 
     void update_logic(float dt_sec);
 };

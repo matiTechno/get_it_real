@@ -18,6 +18,7 @@ public:
     void update(float dt);
 
     void setWave(bool on);
+    void setShake(bool on);
 
 private:
     VAO vao;

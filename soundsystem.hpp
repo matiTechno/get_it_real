@@ -28,6 +28,8 @@ public:
 
         click_sound->setBuffer(*click_buffer);
         switch_sound->setBuffer(*switch_buffer);
+        click_sound->setVolume(35.f);
+        switch_sound->setVolume(35.f);
     }
 
     static void playIntroMusic(bool play)

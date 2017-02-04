@@ -67,7 +67,7 @@ App::App()
     glfwWindowHint(GLFW_RESIZABLE, 0);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    window = glfwCreateWindow(640, 480, "get_it_real", nullptr, nullptr);
+    window = glfwCreateWindow(640, 480, "demo", nullptr, nullptr);
 
     if(!window)
         throw std::runtime_error("[glfw window creation failed]");
@@ -186,7 +186,7 @@ bool App::handleMenus()
         break;
     case MenuName::MainMenu: menus.push_back(std::make_unique<MainMenu>(fbSize));
         break;
-    case MenuName::Game: menus.push_back(std::make_unique<Game>(fbSize));
+    case MenuName::Game: menus.push_back(std::make_unique<Game>(fbSize, *postProcessor));
         break;
     case MenuName::Pause: menus.push_back(std::make_unique<Pause>(fbSize));
         break;
@@ -196,7 +196,7 @@ bool App::handleMenus()
         break;
     case MenuName::WinScreen: menus.push_back(std::make_unique<WinScreen>(fbSize));
         break;
-    case MenuName::NewGame_from_pause: menus.push_back(std::make_unique<Game>(fbSize));
+    case MenuName::NewGame_from_pause: menus.push_back(std::make_unique<Game>(fbSize, *postProcessor));
     }
     if(menus.empty())
     {

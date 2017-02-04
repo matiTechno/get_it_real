@@ -50,18 +50,52 @@ PostProcessor::PostProcessor(int width, int height):
                 "}");
 
     {
+        std::string vs_source(
+                    "#version 330\n"
+                    "layout (location = 0) in vec4 vertex;\n"
+                    "uniform bool shake;\n"
+                    "uniform float time;\n"
+                    "out vec2 texCoord;\n"
+                    "void main()\n"
+                    "{\n"
+                    "gl_Position = vec4(vertex.xy, 0, 1);\n"
+                    "if(shake)\n"
+                    "{\n"
+                    "gl_Position.xy += cos(10 * 3.14 * time) * 0.008;\n"
+                    "}\n"
+                    "texCoord = vertex.zw;\n"
+                    "}");
+
         std::string fs_source(
                     "#version 330\n"
                     "out vec4 color;\n"
                     "in vec2 texCoord;\n"
                     "uniform sampler2D sampl;\n"
-                    "uniform float offset;\n"
+                    "uniform float time;\n"
+                    "uniform bool shake;\n"
                     "uniform bool wave;\n"
                     "void main()\n"
                     "{\n"
                     "vec2 texCoord_w = texCoord\n;"
                     "if(wave)\n"
-                    "texCoord_w.x += sin(texCoord.y * 4 * 2 * 3.14 + offset) / 100;\n"
+                    "texCoord_w.x += sin(texCoord.y * 4 * 2 * 3.14 + 4 * 3.14 * time) / 100;\n"
+                    "if(shake)"
+                    "{\n"
+                    "vec2 texelSize = 1.0 / textureSize(sampl, 0);\n"
+                    "vec3 samples[9];\n"
+                    "int counter = 0;"
+                    "for(int i = -1; i < 2; ++i)\n"
+                    "for(int j = -1; j < 2; ++j)\n"
+                    "{\n"
+                    "samples[counter] = vec3(texture(sampl, texCoord_w + vec2(i, j) * texelSize));"
+                    "++counter;"
+                    "}\n"
+                    "float blur_kernel[9] = float[](1, 1, 1, 1, 1, 1, 1, 1, 1);\n"
+                    "color = vec4(0, 0, 0, 1);\n"
+                    "for(int i = 0; i < 9; ++i)\n"
+                    "color.rgb += samples[i] * blur_kernel[i] * 1.f / 9.f;"
+                    "}\n"
+                    "else\n"
                     "color = vec4(texture(sampl, texCoord_w).xyz, 1);\n"
                     "}");
 
@@ -197,6 +231,7 @@ void PostProcessor::render() const
     shader_final->bind();
     tex_after_bloom.bind();
     vao.bind();
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -205,7 +240,7 @@ void PostProcessor::update(float dt)
     static float time = 0.f;
     time += dt;
     shader_final->bind();
-    glUniform1f(shader_final->getUniLoc("offset"), time * 4.f * 3.14f);
+    glUniform1f(shader_final->getUniLoc("time"), time);
 }
 
 void PostProcessor::setWave(bool on)
@@ -215,4 +250,13 @@ void PostProcessor::setWave(bool on)
         glUniform1f(shader_final->getUniLoc("wave"), true);
     else
         glUniform1f(shader_final->getUniLoc("wave"), false);
+}
+
+void PostProcessor::setShake(bool on)
+{
+    shader_final->bind();
+    if(on)
+        glUniform1f(shader_final->getUniLoc("shake"), true);
+    else
+        glUniform1f(shader_final->getUniLoc("shake"), false);
 }
