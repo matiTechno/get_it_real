@@ -78,7 +78,7 @@ MainMenu::MainMenu(const glm::vec2& fbSize):
     projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
     font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 60)),
     current_option(0),
-    tex("res/block1_Jerom.png"),
+    tex("res/background_Jerom.png"),
     fbSize(fbSize)
 {
     options.push_back(std::make_unique<Text>(glm::vec4(255.f, 128.f, 0.f, 1.f), false, glm::vec2(),
@@ -147,8 +147,7 @@ void MainMenu::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     Sprite sprite;
-    sprite.bloom = true;
-    sprite.color = glm::vec4(166.f, 67.f, 33.f, 0.05f);
+    sprite.color = glm::vec4(166.f, 67.f, 33.f, 0.15f);
     sprite.position = glm::vec2(0.f, 0.f);
     sprite.size = fbSize;
     sprite.texture = &tex;
@@ -269,7 +268,7 @@ NewGameMenu::NewGameMenu(const glm::vec2& fbSize):
     Menu(MenuName::NewGameMenu),
     projection(glm::ortho(0.f, fbSize.x, fbSize.y, 0.f)),
     font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 60)),
-    tex("res/block1_Jerom.png"),
+    tex("res/background_Jerom.png"),
     fbSize(fbSize),
     current_option(0)
 {
@@ -340,8 +339,7 @@ void NewGameMenu::render(Renderer_2D& renderer)
 {
     renderer.load_projection(projection);
     Sprite sprite;
-    sprite.bloom = true;
-    sprite.color = glm::vec4(166.f, 67.f, 33.f, 0.05f);
+    sprite.color = glm::vec4(166.f, 67.f, 33.f, 0.15f);
     sprite.position = glm::vec2(0.f, 0.f);
     sprite.size = fbSize;
     sprite.texture = &tex;
