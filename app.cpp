@@ -45,7 +45,7 @@ std::unique_ptr<sf::SoundBuffer> SoundSystem::click_buffer, SoundSystem::switch_
 std::unique_ptr<sf::Sound> SoundSystem::click_sound, SoundSystem::switch_sound;
 std::unique_ptr<sf::Music> SoundSystem::intro_music;
 
-App::App()
+App::App(unsigned width, unsigned height)
 {
     assert(!current);
     current = true;
@@ -67,7 +67,7 @@ App::App()
     glfwWindowHint(GLFW_RESIZABLE, 0);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    window = glfwCreateWindow(640, 480, "demo", nullptr, nullptr);
+    window = glfwCreateWindow(int(width), int(height), "demo", nullptr, nullptr);
 
     if(!window)
         throw std::runtime_error("[glfw window creation failed]");

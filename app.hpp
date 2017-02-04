@@ -12,7 +12,7 @@ class PostProcessor;
 class App
 {
 public:
-    App();
+    App(unsigned width, unsigned height);
     ~App();
     App(const App&) = delete;
     App& operator=(const App&) = delete;

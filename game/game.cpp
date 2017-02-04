@@ -6,7 +6,7 @@
 #include <game/collisions.hpp>
 #include <postprocessor.hpp>
 
-Game::Game(const glm::vec2& fbSize, PostProcessor& pp):
+Game::Game(const glm::vec2&, PostProcessor& pp):
     Menu(MenuName::Game),
     pp(pp),
     background_tex("res/background_Jerom.png"),
@@ -48,7 +48,8 @@ Game::Game(const glm::vec2& fbSize, PostProcessor& pp):
     glm::vec2 projSize(640.f, 480.f);
     this->projSize = projSize;
     projection = glm::ortho(0.f, projSize.x, projSize.y, 0.f);
-    assert(projSize.x / projSize.y == fbSize.x / fbSize.y);
+    // handling at beggining ,,, main.cpp
+    //assert(projSize.x / projSize.y == fbSize.x / fbSize.y);
 
     bottom_line = projSize.y;
 
@@ -190,7 +191,7 @@ Game::Game(const glm::vec2& fbSize, PostProcessor& pp):
                        "-> / D   move right\n"
                        "SPACE   release ball\n"
                        "ESC       pause");
-        t.text.position = fbSize / 2.f - t.text.getSize() / 2.f + glm::vec2(0.f, 60.f);
+        t.text.position = projSize / 2.f - t.text.getSize() / 2.f + glm::vec2(0.f, 60.f);
         t.text.bloom = true;
         t.text.color = glm::vec4(0.f, 255.f, 255.f, 0.3f);
         t.life = 10000000.f;
@@ -459,7 +460,7 @@ void Game::doCollisions()
     ball.position -= ball_pen;
 
     if(ball_was_coll_br)
-        combo_counter.second += 0.6f;
+        combo_counter.second = 1.f;
 }
 
 void Game::update(float frameTime, PostProcessor&)
