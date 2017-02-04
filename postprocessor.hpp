@@ -19,6 +19,8 @@ public:
 
     void setWave(bool on);
     void setShake(bool on);
+    // when time < 0 this effect won't be used
+    void setBlackOut(float time);
 
 private:
     VAO vao;

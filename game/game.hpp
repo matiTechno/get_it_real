@@ -61,7 +61,8 @@ public:
     std::pair<std::size_t, float> combo_counter;
     bool start = true;
     float shake_time;
-    std::unique_ptr<void, std::function<void(void*)>> pp_effects;
+    std::unique_ptr<int, std::function<void(int*)>> pp_effects;
+    float black_out_t;
 
     void update_logic(float dt_sec);
 };

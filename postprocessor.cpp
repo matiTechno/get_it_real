@@ -74,12 +74,13 @@ PostProcessor::PostProcessor(int width, int height):
                     "uniform float time;\n"
                     "uniform bool shake;\n"
                     "uniform bool wave;\n"
+                    "uniform float blackout_t;\n"
                     "void main()\n"
                     "{\n"
                     "vec2 texCoord_w = texCoord\n;"
                     "if(wave)\n"
                     "texCoord_w.x += sin(texCoord.y * 4 * 2 * 3.14 + 4 * 3.14 * time) / 100;\n"
-                    "if(shake)"
+                    "if(shake || blackout_t > 0)"
                     "{\n"
                     "vec2 texelSize = 1.0 / textureSize(sampl, 0);\n"
                     "vec3 samples[9];\n"
@@ -97,6 +98,8 @@ PostProcessor::PostProcessor(int width, int height):
                     "}\n"
                     "else\n"
                     "color = vec4(texture(sampl, texCoord_w).xyz, 1);\n"
+                    "if(blackout_t > 0)\n"
+                    "color.gb *= abs(cos(blackout_t * 3.14));"
                     "}");
 
         shader_final = std::make_unique<Shader>(vs_source, fs_source);
@@ -259,4 +262,10 @@ void PostProcessor::setShake(bool on)
         glUniform1f(shader_final->getUniLoc("shake"), true);
     else
         glUniform1f(shader_final->getUniLoc("shake"), false);
+}
+
+void PostProcessor::setBlackOut(float time)
+{
+    shader_final->bind();
+    glUniform1f(shader_final->getUniLoc("blackout_t"), time);
 }

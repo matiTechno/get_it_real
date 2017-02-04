@@ -27,16 +27,20 @@ Game::Game(const glm::vec2& fbSize, PostProcessor& pp):
     brick_explo21(1.f, loadTexCoords("res/explosion21.sprites", 0.05f), false, Origin::middle),
     explo21("res/Explosion21.png"),
     font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 40)),
-    shake_time(0.f)
+    shake_time(0.f),
+    black_out_t(0.f)
 {
     std::random_device rd;
     rn_engine.seed(rd());
 
-    //    auto effect_cancel = [](void*)
-    //    {
-
-    //    };
-    //    pp_effects = std::make_unique<void, decltype(effect_cancel)>(nullptr, effect_cancel);
+    auto effect_cancel = [this](int* i)
+    {
+        this->pp.setShake(false);
+        this->pp.setWave(false);
+        this->pp.setBlackOut(0.f);
+        delete i;
+    };
+    pp_effects = std::unique_ptr<int, decltype(effect_cancel)>(new int, effect_cancel);
 
     combo_counter.first = 0;
     combo_counter.second = 0.f;
@@ -295,6 +299,10 @@ void Game::update_logic(float dt_sec)
     if(shake_time > 0.f)
         shake_time -= dt_sec;
 
+    //blackout
+    if(black_out_t > 0.f)
+        black_out_t -= dt_sec;
+
     //last: win or loose
     if(hp_bar->isDead())
     {
@@ -352,6 +360,10 @@ void Game::doCollisions()
         t_entities.push_back(std::make_unique<Min_hp_t>(t));
 
         ball.reset();
+
+        // it should be this value.
+        // it's coupled with shader and cos fun.
+        black_out_t = 1.f;
     }
     // ball paddle
     {
@@ -467,4 +479,6 @@ void Game::update(float frameTime, PostProcessor&)
         pp.setShake(true);
     else
         pp.setShake(false);
+
+    pp.setBlackOut(black_out_t);
 }
