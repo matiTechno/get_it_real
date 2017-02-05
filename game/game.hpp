@@ -65,6 +65,10 @@ public:
     std::unique_ptr<int, std::function<void(int*)>> pp_effects;
     float black_out_t;
     PowerUp_System pw_system;
+    Texture tex_coin;
+    Animation anim_coin;
+    Texture tex_pw_ball;
+    Animation anim_pw_ball;
 
     void update_logic(float dt_sec);
 };

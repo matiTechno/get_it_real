@@ -18,7 +18,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     time_passed(0.f),
     //accumulator(0.f),
     //dt_update(0.01672f),
-    ball_drop_anim(1.f, loadTexCoords("res/effect_hit_bott.sprites", 0.04f), false, Origin::bottom),
+    ball_drop_anim(0.8f, loadTexCoords("res/effect_hit_bott.sprites", 0.02f), false, Origin::bottom),
     tex_hit_bott("res/effect_hit_bott.png"),
     ball_hit_paddle_anim(0.75f, loadTexCoords("res/effect_explo1.sprites", 0.06f), false, Origin::middle),
     tex_paddle_hit("res/effect_explo1.png"),
@@ -28,7 +28,11 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     explo21("res/Explosion21.png"),
     font(Renderer_2D::loadFont("res/MotionControl-Bold.otf", 40)),
     shake_time(0.f),
-    black_out_t(0.f)
+    black_out_t(0.f),
+    tex_coin("res/coin_copper.png"),
+    anim_coin(1.2f, loadTexCoords("res/coin.sprites", 0.08f), true, Origin::middle),
+    tex_pw_ball("res/Explosion03.png"),
+    anim_pw_ball(0.7f, loadTexCoords("res/Explosion3.sprites", 0.05f), false, Origin::middle)
 {
     std::random_device rd;
     rn_engine.seed(rd());
@@ -358,7 +362,7 @@ void Game::doCollisions()
     // ball bottom line
     if(ball.position.y > bottom_line)
     {
-        animations.emplace_back(ball.position, tex_hit_bott, ball_drop_anim);
+        animations.emplace_back(ball.position + glm::vec2(ball.getRadius(), 0.f), tex_hit_bott, ball_drop_anim);
         hp_bar->loseLife(*this);
 
         Min_hp_t t(font, projSize);
@@ -370,6 +374,16 @@ void Game::doCollisions()
         // it's coupled with shader and cos fun.
         black_out_t = 1.f;
     }
+
+    // powerup bottom line
+    for(auto& powerup: pw_system.powerups)
+    {
+        if(powerup->position.y > bottom_line)
+        {
+            powerup->isDead = true;
+        }
+    }
+
     // ball paddle
     {
         auto coll = ballRectCollision(ball, paddle);
@@ -377,7 +391,7 @@ void Game::doCollisions()
         {
             if(!ball.isImmune_to_paddle())
             {
-                ball.isImmune_to_paddle_ = 0.3f;
+                ball.isImmune_to_paddle_ = 0.1f;
                 paddle.reflectVEL(coll.penetration);
 
                 if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
@@ -394,8 +408,6 @@ void Game::doCollisions()
             auto coll = ballRectCollision(ball, brick);
             if(coll.isCollision)
             {
-                // spawn powerup if brick destroyed
-
                 reflectVel(ball, coll.penetration);
                 if(brick.b_type == Brick_type::one_hit)
                 {
@@ -442,6 +454,18 @@ void Game::doCollisions()
                                             glm::vec4(-5.f, -5.f, 10.f, 10.f),
                                             true, GL_SRC_ALPHA, GL_ONE, pdata);
                 }
+
+                //#################
+                //#################
+                // TO DO: SPAWN POWERUP
+                if(brick.b_type == Brick_type::gone)
+                {
+                    auto pw = std::make_unique<PowerUp>(brick.position + brick.size / 2.f, tex_coin, anim_coin);
+                    pw->velocity = glm::vec2(0.f, 30.f);
+                    pw->color.a = 0.5f;
+                    pw->glow = true;
+                    pw_system.powerups.push_back(std::move(pw));
+                }
             }
         }
     }
@@ -464,8 +488,8 @@ void Game::doCollisions()
     {
         for(auto& powerup: pw_system.powerups)
         {
-            auto coll = ballRectCollision(ball, powerup);
-            if(coll.isCollision && powerup.immuneTime <= 0.f)
+            auto coll = ballRectCollision(ball, *powerup);
+            if(coll.isCollision && powerup->immuneTime <= 0.f)
             {
                 if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
                     ball_pen.x = coll.pene_vec.x;
@@ -474,11 +498,19 @@ void Game::doCollisions()
 
                 reflectVel(ball, coll.penetration);
 
-                // powerups code below
-                //...
-                //...
-                //... + spawn some particles / explo animation
-                powerup.isDead = true;
+                ball_was_coll_br = true;
+                ++combo_counter.first;
+
+                powerup->isDead = true;
+                animations.emplace_back(coll.point, tex_pw_ball, anim_pw_ball);
+
+                PData pdata{true, glm::vec2(2, 10), glm::vec4(0.f, 100.f, 255.f, 1.f), glm::vec4(20.f, 255.f, 255.f, 1.f),
+                            glm::vec2(0.3f, 0.5f), &tex_gen_ball, glm::vec4(60.f, 60.f, -60.f, -60.f),
+                            glm::vec4(0.f, 80.f, 0.f, 80.f), nullptr};
+
+                generators.emplace_back(0.0005f, coll.point, 0.1f,
+                                        glm::vec4(-2.f, -2.f, 4.f, 4.f),
+                                        true, GL_SRC_ALPHA, GL_ONE, pdata);
             }
         }
     }
@@ -487,15 +519,23 @@ void Game::doCollisions()
     {
         for(auto& powerup: pw_system.powerups)
         {
-            auto coll = rectRectCollision(paddle, powerup);
-            if(coll.isCollision)
+            auto coll = rectRectCollision(paddle, *powerup);
+            if(coll.isCollision && !powerup->isDead)
             {
-                // powerup code
-                //...
-                //...
-                //... + spawni some particles / explo animation
-                powerup.isDead = true;
-                // apply effect
+                {
+                    PData pdata{true, glm::vec2(2, 10), glm::vec4(255.f, 255.f, 255.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
+                                glm::vec2(0.1f, 1.f), &tex_gen_ball, glm::vec4(0.f, 0.f, 0.f, 0.f),
+                                glm::vec4(0.f, 0.f, 0.f, 0.f), nullptr};
+
+                    generators.emplace_back(0.001f, coll.point, 0.1f,
+                                            glm::vec4(-20.f, -20.f, 40.f, 40.f),
+                                            true, GL_SRC_ALPHA, GL_ONE, pdata);
+                }
+
+                powerup->isDead = true;
+                //#################
+                //#################
+                // TO DO: APPLY EFFECT
             }
         }
     }
