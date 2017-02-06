@@ -76,6 +76,7 @@ public:
     Animation anim_candie_orange;
     Texture tex_eyeball;
     Animation anim_eyeball;
+    float ball_gen_nor_sp_time;
 
     void update_logic(float dt_sec);
 };

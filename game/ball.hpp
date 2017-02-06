@@ -4,6 +4,12 @@
 #include <game/entity.hpp>
 class Paddle;
 
+struct Vel_Boost
+{
+    glm::vec2 add_vel;
+    float time;
+};
+
 class Ball: public Entity
 {
 public:
@@ -32,6 +38,7 @@ public:
             move(dt);
         if(isImmune_to_paddle_ > 0.f)
             isImmune_to_paddle_ -= dt;
+
     }
 
     int double_pene = 0;

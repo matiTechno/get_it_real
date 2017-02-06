@@ -27,13 +27,14 @@ private:
 class Min_hp_t: public Text_Entity
 {
 public:
-    Min_hp_t(Font& font, glm::vec2& proj_size, const std::string message, const glm::vec4& color = glm::vec4(255.f, 255.f, 255.f, 0.3f)):
+    Min_hp_t(Font& font, glm::vec2& proj_size, const std::string message, const glm::vec4& color = glm::vec4(255.f, 255.f, 255.f, 0.4f),
+             bool bloom = true):
         Text_Entity(font)
     {
         text.setText(message);
         text.position = proj_size / 2.f - text.getSize() / 2.f;
         life = 3.f;
-        text.bloom = true;
+        text.bloom = bloom;
         text.color = color;
         velocity = glm::vec2(0.f, -30.f);
     }

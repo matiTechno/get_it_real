@@ -39,7 +39,8 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     tex_candies("res/Candies_Jerom_CCBYSA3.png"),
     anim_candie_orange(0.3f, loadTexCoords("res/orange_candy.sprites", 0.1f), true, Origin::middle),
     tex_eyeball("res/eyeball spritesheet.png"),
-    anim_eyeball(1.6f, loadTexCoords("res/eyeball.sprites", 0.1f), true, Origin::middle)
+    anim_eyeball(1.6f, loadTexCoords("res/eyeball.sprites", 0.1f), true, Origin::middle),
+    ball_gen_nor_sp_time(0.02f)
 {
     std::random_device rd;
     rn_engine.seed(rd());
@@ -179,7 +180,6 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
         hp_bar = std::make_unique<HealthBar>(glm::vec2(bricks[1].size.x + 10.f, bricks[0].size.y + 10.f), anime);
         hp_bar->addLife();
         hp_bar->addLife();
-        hp_bar->addLife();
     }
     {
         PData pdata{false, glm::vec2(10, 20), glm::vec4(0.f, 255.f, 0.f, 0.1f), glm::vec4(100.f, 255.f, 100.f, 0.3f),
@@ -192,7 +192,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
         {
             ball_parti->setPosition(this->ball.position + this->ball.getRadius());
         });
-        ball_parti->spawnTime = 0.01f;
+        ball_parti->spawnTime = ball_gen_nor_sp_time;
     }
     {
         Text_Entity t(font);
@@ -265,12 +265,13 @@ void Game::update_logic(float dt_sec)
     //4 ball && paddle
     ball.update(dt_sec);
     if(!start)
-        ball.velocity += glm::normalize(ball.velocity) * 1.f * dt_sec;
+        ball.velocity += glm::normalize(ball.velocity) * 0.5f * dt_sec;
     paddle.update(dt_sec);
     if(ball.double_pene)
         ball_parti->spawnTime = 0.002f;
     else
-        ball_parti->spawnTime = 0.01f;
+        ball_parti->spawnTime = ball_gen_nor_sp_time;
+
     //5 bricks
 
     bricks.erase(std::remove_if(bricks.begin(), bricks.end(),
@@ -374,7 +375,7 @@ void Game::doCollisions()
         animations.emplace_back(ball.position + glm::vec2(ball.getRadius(), 0.f), tex_hit_bott, ball_drop_anim);
         hp_bar->loseLife(*this);
 
-        Min_hp_t t(font, projSize, "-1 hp");
+        Min_hp_t t(font, projSize, "- 1 hp");
         t_entities.push_back(std::make_unique<Min_hp_t>(t));
 
         ball.reset();
@@ -382,6 +383,8 @@ void Game::doCollisions()
         // it should be this value.
         // it's coupled with shader and cos fun.
         black_out_t = 1.f;
+
+        ball.double_pene = 0;
     }
 
     // powerup bottom line
@@ -522,7 +525,7 @@ void Game::doCollisions()
                         else if(num2 <= 80)
                         {
                             auto pw = std::make_unique<PowerUp>(pos, tex_candies, anim_candie_orange, PW_Type::paddle_speed);
-                            pw->velocity = glm::vec2(0.f, 50.f);
+                            pw->velocity = glm::vec2(0.f, 70.f);
                             pw->color.a = 0.4f;
                             pw->glow = true;
                             pw_system.powerups.push_back(std::move(pw));
@@ -615,10 +618,10 @@ void Game::doCollisions()
                 {
                     if(powerup->type == PW_Type::rain)
                     {
-                        shake_time = 2.f;
+                        shake_time = 2.5f;
 
-                        PData pdata{true, glm::vec2(5, 10), glm::vec4(0.f, 0.f, 255.f, 1.f), glm::vec4(100.f, 100.f, 255.f, 1.f),
-                                    glm::vec2(0.3f, 2.f), &fire_tex, glm::vec4(0.f, 0.f, 0.f, 0.f),
+                        PData pdata{true, glm::vec2(2, 5), glm::vec4(0.f, 0.f, 120.f, 0.1f), glm::vec4(0.f, 0.f, 120.f, 1.f),
+                                    glm::vec2(0.3f, 2.f), nullptr, glm::vec4(0.f, 0.f, 0.f, 0.f),
                                     glm::vec4(0.f, 100.f, 0.f, 100.f), nullptr};
 
                         generators.emplace_back(0.0003f, glm::vec2(0.f, 0.f), 4.f,
@@ -628,22 +631,43 @@ void Game::doCollisions()
                     else if(powerup->type == PW_Type::hp)
                     {
                         hp_bar->addLife();
-                        Min_hp_t t(font, projSize, "+1 hp");
+                        Min_hp_t t(font, projSize, "+ 1 hp");
                         t_entities.push_back(std::make_unique<Min_hp_t>(t));
                     }
                     else if(powerup->type == PW_Type::pene)
                     {
-                        Min_hp_t t(font, projSize, "+ ball extra penetration", glm::vec4(0.f, 120.f, 0.f, 0.5f));
+                        Min_hp_t t(font, projSize, "+ ball extra penetration", glm::vec4(0.f, 200.f, 0.f, 0.4f));
                         t_entities.push_back(std::make_unique<Min_hp_t>(t));
                         ball.double_pene += 4;
                     }
                     else if(powerup->type == PW_Type::paddle_speed)
                     {
-                        // this
+                        auto& this_pw = powerup;
+                        // idea changed, now it clears all powerups
+                        for(auto& powerup: pw_system.powerups)
+                        {
+                            if(powerup != this_pw)
+                            {
+                                powerup->isDead = true;
+                                animations.emplace_back(powerup->position + powerup->size / 2.f, tex_pw_ball, anim_pw_ball);
+
+                                PData pdata{true, glm::vec2(2, 10), glm::vec4(0.f, 100.f, 255.f, 1.f), glm::vec4(20.f, 255.f, 255.f, 1.f),
+                                            glm::vec2(0.1f, 0.7f), &tex_gen_ball, glm::vec4(30.f, 60.f, -30.f, -60.f),
+                                            glm::vec4(0.f, 90.f, 0.f, 90.f), nullptr};
+
+                                generators.emplace_back(0.0002f, powerup->position + powerup->size / 2.f, 0.1f,
+                                                        glm::vec4(-2.f, -2.f, 4.f, 4.f),
+                                                        true, GL_SRC_ALPHA, GL_ONE, pdata);
+                            }
+                        }
                     }
                     else if(powerup->type == PW_Type::ball_speed)
                     {
-                        // this and sound and we done
+                        Min_hp_t t(font, projSize, "ball speed increase", glm::vec4(200.f, 0.f, 0.f, 0.4f));
+                        t_entities.push_back(std::make_unique<Min_hp_t>(t));
+                        float len = glm::length(ball.velocity);
+                        len += 20.f;
+                        ball.velocity = glm::normalize(ball.velocity) * len;
                     }
                 }
             }
