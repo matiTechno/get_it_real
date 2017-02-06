@@ -1,8 +1,9 @@
 #include <game/powerup.hpp>
 #include <algorithm>
 
-PowerUp::PowerUp(const glm::vec2& pos, Texture& tex, Animation& anim):
-    AnimEntity(pos, tex, anim)
+PowerUp::PowerUp(const glm::vec2& pos, Texture& tex, Animation& anim, PW_Type type):
+    AnimEntity(pos, tex, anim),
+    type(type)
 {
 
 }

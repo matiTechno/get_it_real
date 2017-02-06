@@ -69,6 +69,13 @@ public:
     Animation anim_coin;
     Texture tex_pw_ball;
     Animation anim_pw_ball;
+    Animation heart_anim;
+    Texture tex_pw_destro;
+    Animation anim_pw_destro;
+    Texture tex_candies;
+    Animation anim_candie_orange;
+    Texture tex_eyeball;
+    Animation anim_eyeball;
 
     void update_logic(float dt_sec);
 };

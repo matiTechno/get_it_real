@@ -6,12 +6,22 @@
 #include <renderer_2d.hpp>
 #include <random>
 
+enum class PW_Type
+{
+    pene,
+    hp,
+    ball_speed,
+    paddle_speed,
+    rain
+};
+
 class PowerUp: public AnimEntity
 {
 public:
-    PowerUp(const glm::vec2& pos, Texture& tex, Animation& anim);
+    PowerUp(const glm::vec2& pos, Texture& tex, Animation& anim, PW_Type);
     bool isDead = false;
-    float immuneTime = 0.2f; // decrease in update
+    float immuneTime = 0.3f; // decrease in update
+    PW_Type type;
 private:
     void update_after_anim(float dt) override;
 };

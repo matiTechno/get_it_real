@@ -98,7 +98,7 @@ std::vector<glm::vec4> lTCimp(const std::string& filename)
     std::string line;
     while(std::getline(ifs, line))
     {
-        if(line.find("spr") != std::string::npos)
+        if(line.find("spr name") != std::string::npos)
         {
             int it = 0;
             glm::vec4 texCoords;

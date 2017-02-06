@@ -32,7 +32,14 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     tex_coin("res/coin_copper.png"),
     anim_coin(1.2f, loadTexCoords("res/coin.sprites", 0.08f), true, Origin::middle),
     tex_pw_ball("res/Explosion03.png"),
-    anim_pw_ball(0.7f, loadTexCoords("res/Explosion3.sprites", 0.05f), false, Origin::middle)
+    anim_pw_ball(0.7f, loadTexCoords("res/Explosion3.sprites", 0.05f), false, Origin::middle),
+    heart_anim(1.5f, loadTexCoords("res/heart.sprites", std::vector<float>{0.4f, 0.1f, 0.1f}), true, Origin::middle),
+    tex_pw_destro("res/crystal-qubodup-ccby3-32-green.png"),
+    anim_pw_destro(1.f, loadTexCoords("res/destro.sprites", 0.08f), true, Origin::middle),
+    tex_candies("res/Candies_Jerom_CCBYSA3.png"),
+    anim_candie_orange(0.3f, loadTexCoords("res/orange_candy.sprites", 0.1f), true, Origin::middle),
+    tex_eyeball("res/eyeball spritesheet.png"),
+    anim_eyeball(1.6f, loadTexCoords("res/eyeball.sprites", 0.1f), true, Origin::middle)
 {
     std::random_device rd;
     rn_engine.seed(rd());
@@ -167,10 +174,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
                 false, GL_SRC_ALPHA, GL_ONE, pdata);
     }
     {
-        Animation anim(1.5f, loadTexCoords("res/heart.sprites", std::vector<float>{0.4f, 0.1f, 0.1f}),
-                       true, Origin::middle);
-
-        AnimEntity anime(glm::vec2(0.f, 0.f), heart_tex, anim);
+        AnimEntity anime(glm::vec2(0.f, 0.f), heart_tex, heart_anim);
         anime.color.a = 0.8f;
         hp_bar = std::make_unique<HealthBar>(glm::vec2(bricks[1].size.x + 10.f, bricks[0].size.y + 10.f), anime);
         hp_bar->addLife();
@@ -455,16 +459,60 @@ void Game::doCollisions()
                                             true, GL_SRC_ALPHA, GL_ONE, pdata);
                 }
 
-                //#################
-                //#################
-                // TO DO: SPAWN POWERUP
+                // powerup spawn
                 if(brick.b_type == Brick_type::gone)
                 {
-                    auto pw = std::make_unique<PowerUp>(brick.position + brick.size / 2.f, tex_coin, anim_coin);
-                    pw->velocity = glm::vec2(0.f, 30.f);
-                    pw->color.a = 0.5f;
-                    pw->glow = true;
-                    pw_system.powerups.push_back(std::move(pw));
+                    std::uniform_int_distribution<> uni(1, 100);
+                    int num = uni(rn_engine);
+
+                    if(num <= 50)
+                    {}
+                    else
+                    {
+                        int num2 = uni(rn_engine);
+                        glm::vec2 pos = brick.position + brick.size / 2.f;
+                        if(num2 <= 20)
+                        {
+                            auto pw = std::make_unique<PowerUp>(pos, tex_coin, anim_coin, PW_Type::rain);
+                            pw->velocity = glm::vec2(0.f, 30.f);
+                            pw->color.a = 0.5f;
+                            pw->glow = true;
+                            pw_system.powerups.push_back(std::move(pw));
+                        }
+                        else if(num2 <= 40)
+                        {
+                            auto pw = std::make_unique<PowerUp>(pos, heart_tex, heart_anim, PW_Type::hp);
+                            pw->velocity = glm::vec2(0.f, 20.f);
+                            pw->color.a = 0.4f;
+                            pw->glow = true;
+                            pw_system.powerups.push_back(std::move(pw));
+                        }
+                        else if(num2 <= 60)
+                        {
+                            auto pw = std::make_unique<PowerUp>(pos, tex_pw_destro, anim_pw_destro, PW_Type::pene);
+                            pw->velocity = glm::vec2(0.f, 60.f);
+                            pw->color.a = 0.4f;
+                            pw->glow = true;
+                            pw_system.powerups.push_back(std::move(pw));
+                        }
+                        else if(num2 <= 80)
+                        {
+                            auto pw = std::make_unique<PowerUp>(pos, tex_candies, anim_candie_orange, PW_Type::paddle_speed);
+                            pw->velocity = glm::vec2(0.f, 50.f);
+                            pw->color.a = 0.4f;
+                            pw->glow = true;
+                            pw_system.powerups.push_back(std::move(pw));
+                        }
+                        else
+                        {
+                            auto pw = std::make_unique<PowerUp>(pos, tex_eyeball, anim_eyeball, PW_Type::ball_speed);
+                            pw->velocity = glm::vec2(0.f, 40.f);
+                            pw->color.a = 0.4f;
+                            pw->glow = true;
+                            pw_system.powerups.push_back(std::move(pw));
+                        }
+                    }
+
                 }
             }
         }
@@ -505,10 +553,10 @@ void Game::doCollisions()
                 animations.emplace_back(coll.point, tex_pw_ball, anim_pw_ball);
 
                 PData pdata{true, glm::vec2(2, 10), glm::vec4(0.f, 100.f, 255.f, 1.f), glm::vec4(20.f, 255.f, 255.f, 1.f),
-                            glm::vec2(0.3f, 0.5f), &tex_gen_ball, glm::vec4(60.f, 60.f, -60.f, -60.f),
-                            glm::vec4(0.f, 80.f, 0.f, 80.f), nullptr};
+                            glm::vec2(0.1f, 0.7f), &tex_gen_ball, glm::vec4(30.f, 60.f, -30.f, -60.f),
+                            glm::vec4(0.f, 90.f, 0.f, 90.f), nullptr};
 
-                generators.emplace_back(0.0005f, coll.point, 0.1f,
+                generators.emplace_back(0.0002f, coll.point, 0.1f,
                                         glm::vec4(-2.f, -2.f, 4.f, 4.f),
                                         true, GL_SRC_ALPHA, GL_ONE, pdata);
             }
@@ -533,9 +581,8 @@ void Game::doCollisions()
                 }
 
                 powerup->isDead = true;
-                //#################
-                //#################
-                // TO DO: APPLY EFFECT
+                // powerup apply effect
+
             }
         }
     }
