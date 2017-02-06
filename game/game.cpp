@@ -646,7 +646,7 @@ void Game::doCollisions()
                         // idea changed, now it clears all powerups
                         for(auto& powerup: pw_system.powerups)
                         {
-                            if(powerup != this_pw)
+                            if(&powerup != &this_pw)
                             {
                                 powerup->isDead = true;
                                 animations.emplace_back(powerup->position + powerup->size / 2.f, tex_pw_ball, anim_pw_ball);
