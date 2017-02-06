@@ -33,6 +33,8 @@ public:
         if(isImmune_to_paddle_ > 0.f)
             isImmune_to_paddle_ -= dt;
     }
+
+    int double_pene = 0;
 };
 
 #endif // BALL_HPP

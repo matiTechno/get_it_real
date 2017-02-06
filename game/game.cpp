@@ -1,4 +1,4 @@
-#include <game/game.hpp>
+﻿#include <game/game.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 #include <soundsystem.hpp>
@@ -14,7 +14,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     wall_texture("res/sci-fi-platformer-tiles-32x32-extension.png"),
     fire_tex("res/explosion00.png"),
     heart_tex("res/heart.png"),
-    max_frame_time(0.03f),
+    max_frame_time(0.018f),
     time_passed(0.f),
     //accumulator(0.f),
     //dt_update(0.01672f),
@@ -114,7 +114,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     ball.color = glm::vec4(255.f, 0.f, 255.f, 1.f);
     ball.glow = true;
     ball.size = glm::vec2(20, 20);
-    ball.velocity = glm::vec2(0.f, 200.f);
+    ball.velocity = glm::vec2(0.f, 230.f);
     ball.reset();
 
     paddle.ball = &ball;
@@ -155,7 +155,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     }
     // fire glow base
     {
-        PData pdata{true, glm::vec2(2, 8), glm::vec4(255.f, 255.f, 255.f, 0.2f), glm::vec4(255.f, 255.f, 255.f, 1.f),
+        PData pdata{true, glm::vec2(2, 9), glm::vec4(255.f, 255.f, 255.f, 0.2f), glm::vec4(255.f, 255.f, 255.f, 1.f),
                     glm::vec2(0.5f, 1.f), &fire_tex, glm::vec4(0.f, -10.f, 0.f, -50.f), glm::vec4(0.f, 0.f, 0.f, -10.f),
                     nullptr};
 
@@ -186,12 +186,13 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
                     glm::vec2(0.3f, 0.8f), &tex_gen_ball, glm::vec4(0.f, 0.f, 0.f, 0.f), glm::vec4(-20.f, -20.f, 20.f, 20.f),
                     nullptr};
 
-        ball_parti = std::make_unique<ParticleGenerator>(0.01f, glm::vec2(0.f, 0.f), -1000.f,
+        ball_parti = std::make_unique<ParticleGenerator>(0.002f, glm::vec2(0.f, 0.f), -1000.f,
                                                          glm::vec4(-ball.size / 2.f, ball.size),
                                                          true, GL_SRC_ALPHA, GL_ONE, pdata, [this](float)
         {
             ball_parti->setPosition(this->ball.position + this->ball.getRadius());
         });
+        ball_parti->spawnTime = 0.01f;
     }
     {
         Text_Entity t(font);
@@ -264,9 +265,12 @@ void Game::update_logic(float dt_sec)
     //4 ball && paddle
     ball.update(dt_sec);
     if(!start)
-        ball.velocity += glm::normalize(ball.velocity) * 0.5f * dt_sec;
+        ball.velocity += glm::normalize(ball.velocity) * 1.f * dt_sec;
     paddle.update(dt_sec);
-
+    if(ball.double_pene)
+        ball_parti->spawnTime = 0.002f;
+    else
+        ball_parti->spawnTime = 0.01f;
     //5 bricks
 
     bricks.erase(std::remove_if(bricks.begin(), bricks.end(),
@@ -302,7 +306,8 @@ void Game::update_logic(float dt_sec)
         combo_counter.second = 0.f;
         if(combo_counter.first > 1)
         {
-            t_entities.push_back(std::make_unique<Combo_t>(paddle.position + paddle.size / 2.f - glm::vec2(0.f, 60.f), font, combo_counter.first));
+            t_entities.push_back(std::make_unique<Combo_t>(paddle.position + paddle.size / 2.f - glm::vec2(0.f, 60.f),
+                                                           font, combo_counter.first));
         }
         combo_counter.first = 0;
     }
@@ -369,7 +374,7 @@ void Game::doCollisions()
         animations.emplace_back(ball.position + glm::vec2(ball.getRadius(), 0.f), tex_hit_bott, ball_drop_anim);
         hp_bar->loseLife(*this);
 
-        Min_hp_t t(font, projSize);
+        Min_hp_t t(font, projSize, "-1 hp");
         t_entities.push_back(std::make_unique<Min_hp_t>(t));
 
         ball.reset();
@@ -412,7 +417,8 @@ void Game::doCollisions()
             auto coll = ballRectCollision(ball, brick);
             if(coll.isCollision)
             {
-                reflectVel(ball, coll.penetration);
+                bool was_solid = false;
+
                 if(brick.b_type == Brick_type::one_hit)
                 {
                     animations.emplace_back(coll.point, tex_paddle_hit, ball_hit_paddle_anim);
@@ -424,7 +430,8 @@ void Game::doCollisions()
                 }
                 else if(brick.b_type == Brick_type::solid)
                 {
-                    shake_time = 0.3f;
+                    if(shake_time < 0.3f)
+                        shake_time = 0.3f;
                     {
                         PData pdata{false, glm::vec2(5, 8), glm::vec4(0.f, 0.f, 0.f, 1.f), glm::vec4(50.f, 50.f, 50.f, 1.f),
                                     glm::vec2(0.5f, 2.5f), &tex_gen_ball, glm::vec4(20.f, 20.f, -20.f, -20.f),
@@ -433,6 +440,17 @@ void Game::doCollisions()
                         generators.emplace_back(0.001f, brick.position + glm::vec2(20.f, brick.size.y), 0.3f,
                                                 glm::vec4(0.f, 0.f, brick.size.x - 40.f, 0.f),
                                                 false, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, pdata);
+                    }
+
+                    if(ball.double_pene)
+                    {
+                        animations.emplace_back(coll.point, tex_paddle_hit, ball_hit_paddle_anim);
+                        brick.b_type = Brick_type::gone;
+                        // combo counter
+                        ball_was_coll_br = true;
+                        ++combo_counter.first;
+
+                        was_solid = true;
                     }
                 }
                 else if(brick.b_type == Brick_type::two_hit_effect)
@@ -444,11 +462,17 @@ void Game::doCollisions()
                     ball_was_coll_br = true;
                     ++combo_counter.first;
                 }
+                if(!ball.double_pene || was_solid || brick.b_type == Brick_type::wall)
+                {
+                    reflectVel(ball, coll.penetration);
 
-                if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
-                    ball_pen.x = coll.pene_vec.x;
-                if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
-                    ball_pen.y = coll.pene_vec.y;
+                    if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
+                        ball_pen.x = coll.pene_vec.x;
+                    if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
+                        ball_pen.y = coll.pene_vec.y;
+                }
+                if(ball.double_pene && !(brick.b_type == Brick_type::wall))
+                    --ball.double_pene;
                 {
                     PData pdata{true, glm::vec2(3, 8), glm::vec4(255.f, 0.f, 0.f, 1.f), glm::vec4(255.f, 100.f, 0.f, 1.f),
                                 glm::vec2(0.5f, 1.f), &tex_gen_ball, glm::vec4(60.f, 60.f, -60.f, -60.f),
@@ -539,12 +563,17 @@ void Game::doCollisions()
             auto coll = ballRectCollision(ball, *powerup);
             if(coll.isCollision && powerup->immuneTime <= 0.f)
             {
-                if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
-                    ball_pen.x = coll.pene_vec.x;
-                if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
-                    ball_pen.y = coll.pene_vec.y;
+                if(!ball.double_pene)
+                {
+                    if(glm::abs(coll.pene_vec.x) > glm::abs(ball_pen.x))
+                        ball_pen.x = coll.pene_vec.x;
+                    if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
+                        ball_pen.y = coll.pene_vec.y;
 
-                reflectVel(ball, coll.penetration);
+                    reflectVel(ball, coll.penetration);
+                }
+                else
+                    --ball.double_pene;
 
                 ball_was_coll_br = true;
                 ++combo_counter.first;
@@ -571,6 +600,7 @@ void Game::doCollisions()
             if(coll.isCollision && !powerup->isDead)
             {
                 {
+                    // DONT TOUCH IT XD <self note>
                     PData pdata{true, glm::vec2(2, 10), glm::vec4(255.f, 255.f, 255.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
                                 glm::vec2(0.1f, 1.f), &tex_gen_ball, glm::vec4(0.f, 0.f, 0.f, 0.f),
                                 glm::vec4(0.f, 0.f, 0.f, 0.f), nullptr};
@@ -582,7 +612,40 @@ void Game::doCollisions()
 
                 powerup->isDead = true;
                 // powerup apply effect
+                {
+                    if(powerup->type == PW_Type::rain)
+                    {
+                        shake_time = 2.f;
 
+                        PData pdata{true, glm::vec2(5, 10), glm::vec4(0.f, 0.f, 255.f, 1.f), glm::vec4(100.f, 100.f, 255.f, 1.f),
+                                    glm::vec2(0.3f, 2.f), &fire_tex, glm::vec4(0.f, 0.f, 0.f, 0.f),
+                                    glm::vec4(0.f, 100.f, 0.f, 100.f), nullptr};
+
+                        generators.emplace_back(0.0003f, glm::vec2(0.f, 0.f), 4.f,
+                                                glm::vec4(0.f, 0.f, projSize),
+                                                false, GL_SRC_ALPHA, GL_ONE, pdata);
+                    }
+                    else if(powerup->type == PW_Type::hp)
+                    {
+                        hp_bar->addLife();
+                        Min_hp_t t(font, projSize, "+1 hp");
+                        t_entities.push_back(std::make_unique<Min_hp_t>(t));
+                    }
+                    else if(powerup->type == PW_Type::pene)
+                    {
+                        Min_hp_t t(font, projSize, "+ ball extra penetration", glm::vec4(0.f, 120.f, 0.f, 0.5f));
+                        t_entities.push_back(std::make_unique<Min_hp_t>(t));
+                        ball.double_pene += 4;
+                    }
+                    else if(powerup->type == PW_Type::paddle_speed)
+                    {
+                        // this
+                    }
+                    else if(powerup->type == PW_Type::ball_speed)
+                    {
+                        // this and sound and we done
+                    }
+                }
             }
         }
     }

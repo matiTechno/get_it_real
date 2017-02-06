@@ -61,8 +61,10 @@ public:
     const PData& getPdata() const;
     PData& getPdata();
 
-private:
+    // beautiful hack :)
     float spawnTime;
+
+private:
     glm::vec2 position;
     float accumulator;
     // -1000 means it's always active

@@ -7,9 +7,8 @@ void Text_Entity::update(float dt)
     custom_update(dt);
 }
 
-void Min_hp_t::custom_update(float dt)
+void Min_hp_t::custom_update(float)
 {
-    text.setScale(text.getScale() + 0.2f * dt);
 }
 
 Combo_t::Combo_t(const glm::vec2& coll_pos, Font& font, std::size_t count):
