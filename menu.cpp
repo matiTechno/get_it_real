@@ -228,21 +228,25 @@ void Pause::processInput(const Input<int, std::hash<int>>& keys)
         {
             isDead = true;
             new_menu = MenuName::Game;
+            SoundSystem::resume_game_sounds();
         }
         if(current_option == 1)
         {
             isDead = true;
             new_menu = MenuName::NewGame_from_pause;
+            SoundSystem::stop_all_game_sounds();
         }
         else if(current_option == 2)
         {
             isDead = true;
             new_menu = MenuName::MainMenu;
+            SoundSystem::stop_all_game_sounds();
         }
         else if(current_option == 3)
         {
             isDead = true;
             new_menu = MenuName::None;
+            SoundSystem::stop_all_game_sounds();
         }
         SoundSystem::playClick();
     }
@@ -250,6 +254,7 @@ void Pause::processInput(const Input<int, std::hash<int>>& keys)
     {
         isDead = true;
         new_menu = MenuName::Game;
+        SoundSystem::resume_game_sounds();
     }
 
     options[current_option]->bloom = true;

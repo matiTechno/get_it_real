@@ -215,6 +215,7 @@ void Game::processInput(const Input<int, std::hash<int>>& keys)
     if(keys.wasPressed(GLFW_KEY_ESCAPE))
     {
         new_menu = MenuName::Pause;
+        SoundSystem::pause_all_game_sounds();
     }
     if(keys.wasPressed(GLFW_KEY_A) || keys.isPressed(GLFW_KEY_A)
             || keys.wasPressed(GLFW_KEY_LEFT) || keys.isPressed(GLFW_KEY_LEFT))
@@ -326,6 +327,7 @@ void Game::update_logic(float dt_sec)
     {
         isDead = true;
         new_menu = MenuName::LoseScreen;
+        SoundSystem::stop_all_game_sounds();
     }
 
     bool lvl_done = true;
@@ -341,6 +343,7 @@ void Game::update_logic(float dt_sec)
     {
         isDead = true;
         new_menu = MenuName::WinScreen;
+        SoundSystem::stop_all_game_sounds();
     }
 }
 
@@ -410,6 +413,8 @@ void Game::doCollisions()
                     ball_pen.x = coll.pene_vec.x;
                 if(glm::abs(coll.pene_vec.y) > glm::abs(ball_pen.y))
                     ball_pen.y = coll.pene_vec.y;
+
+                SoundSystem::play_sound(G_sound::paddle_ball);
             }
         }
     }

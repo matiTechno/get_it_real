@@ -28,7 +28,10 @@ void App::window_focus_callback(GLFWwindow*, int focused)
     if(!focused)
     {
         if(menus.back()->getType() == MenuName::Game)
+        {
             menus.push_back(std::make_unique<Pause>(fbSize));
+            SoundSystem::pause_all_game_sounds();
+        }
     }
 }
 
@@ -44,6 +47,8 @@ glm::vec2 App::fbSize;
 std::unique_ptr<sf::SoundBuffer> SoundSystem::click_buffer, SoundSystem::switch_buffer;
 std::unique_ptr<sf::Sound> SoundSystem::click_sound, SoundSystem::switch_sound;
 std::unique_ptr<sf::Music> SoundSystem::intro_music;
+std::unordered_map<G_sound::Sound, sf::SoundBuffer, std::hash<int>> SoundSystem::game_s_buffers;
+std::unordered_map<G_sound::Sound, sf::Sound, std::hash<int>> SoundSystem::game_sounds;
 
 App::App(unsigned width, unsigned height)
 {
