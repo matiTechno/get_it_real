@@ -19,7 +19,7 @@ public:
 
     void setWave(bool on);
     void setShake(bool on);
-    // when time < 0 this effect won't be used
+    // when time < 0 this effect is not used
     void setBlackOut(float time);
 
 private:

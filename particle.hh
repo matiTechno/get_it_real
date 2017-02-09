@@ -67,7 +67,7 @@ public:
 private:
     glm::vec2 position;
     float accumulator;
-    // -1000 means it's always active
+    // <= -1000 means it's always active
     float life;
     // left top corner relative to generator position
     // + spawn size

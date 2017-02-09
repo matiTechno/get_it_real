@@ -43,10 +43,8 @@ Input<int, std::hash<int>> App::keys;
 std::vector<std::unique_ptr<Menu>> App::menus;
 glm::vec2 App::fbSize;
 
-// sound xd
 std::unique_ptr<sf::SoundBuffer> SoundSystem::click_buffer, SoundSystem::switch_buffer;
 std::unique_ptr<sf::Sound> SoundSystem::click_sound, SoundSystem::switch_sound;
-std::unique_ptr<sf::Music> SoundSystem::intro_music;
 std::unordered_map<G_sound::Sound, sf::SoundBuffer, std::hash<int>> SoundSystem::game_s_buffers;
 std::unordered_map<G_sound::Sound, sf::Sound, std::hash<int>> SoundSystem::game_sounds;
 
@@ -93,6 +91,9 @@ App::App(unsigned width, unsigned height)
     std::cout << "vendor: " << glGetString(GL_VENDOR) << std::endl;
     std::cout << "renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "gl version: " << glGetString(GL_VERSION) << std::endl;
+
+    if(!GLAD_GL_ARB_texture_storage)
+        throw std::runtime_error("[ARB_texture_storage is required or opengl version 4.2+]");
 
     glfwSwapInterval(1);
 

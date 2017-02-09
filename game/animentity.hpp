@@ -11,7 +11,7 @@ public:
         Entity(),
         anim(anim)
     {
-        // so the midddle of entity will be in pos (not the left corner)
+        // so the origin of animation will be in pos
         this->texture = &tex;
         position = pos;
         anim.set(*this);

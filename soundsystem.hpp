@@ -11,7 +11,21 @@ struct G_sound
 {
     enum Sound
     {
-        paddle_ball
+        paddle_ball,
+        heart,
+        gem,
+        coin,
+        rain,
+        hp_lose,
+        powerup_destro,
+        eyeball,
+        paddle_ball_pene,
+        candy,
+        solid_brick_hit,
+        wall_hit,
+        br_destro_1,
+        br_destro_2,
+        br_destro_solid
     };
 };
 
@@ -22,37 +36,39 @@ public:
     {
         click_buffer = std::make_unique<sf::SoundBuffer>();
         switch_buffer = std::make_unique<sf::SoundBuffer>();
-        click_sound = std::make_unique<sf::Sound>();
-        switch_sound = std::make_unique<sf::Sound>();
-        intro_music = std::make_unique<sf::Music>();
 
-        std::string file1("res/button04.mp3.flac"),
-                file2("res/Clic07.mp3.flac"),
-                file3("res/wind1.wav");
+        click_sound = std::make_unique<sf::Sound>();
+        click_sound->setVolume(30.f);
+        switch_sound = std::make_unique<sf::Sound>();
+        switch_sound->setVolume(30.f);
+
+        std::string file1("res/button04.mp3.ogg"), file2("res/Clic07.mp3.ogg");
 
         if(!click_buffer->loadFromFile(file1))
             throw std::runtime_error("[could not load: " + file1 + ']');
         if(!switch_buffer->loadFromFile(file2))
             throw std::runtime_error("[could not load: " + file2 + ']');
-        if(!intro_music->openFromFile(file3))
-            throw std::runtime_error("[could not load: " + file3 + ']');
 
         click_sound->setBuffer(*click_buffer);
         switch_sound->setBuffer(*switch_buffer);
-        click_sound->setVolume(35.f);
-        switch_sound->setVolume(35.f);
 
-        // load game sounds
-        load_sound_to_buffer("res/g_sound/Arkanoid SFX (1).wav", G_sound::paddle_ball, 50.f);
+        load_sound_to_buffer("res/g_sound/Arkanoid SFX (1).ogg", G_sound::paddle_ball, 10.f);
+        load_sound_to_buffer("res/g_sound/heartbeat.mp3_.ogg", G_sound::heart);
+        load_sound_to_buffer("res/g_sound/133008__cosmicd__annulet-of-absorption(1).ogg", G_sound::gem, 30.f);
+        load_sound_to_buffer("res/g_sound/Picked Coin Echo.ogg", G_sound::coin, 50.f);
+        load_sound_to_buffer("res/g_sound/rock_breaking.ogg", G_sound::rain, 15.f);
+        load_sound_to_buffer("res/g_sound/qubodupImpactMeat02.ogg", G_sound::hp_lose, 30.f);
+        load_sound_to_buffer("res/g_sound/foom_0.ogg", G_sound::powerup_destro, 30.f);
+        load_sound_to_buffer("res/g_sound/Arkanoid SFX (10).ogg", G_sound::eyeball, 20.f);
+        load_sound_to_buffer("res/g_sound/flagdrop.ogg", G_sound::paddle_ball_pene, 25.f);
+        load_sound_to_buffer("res/g_sound/qubodupImpactStone.ogg", G_sound::solid_brick_hit, 15.f);
+        load_sound_to_buffer("res/g_sound/Randomize3.ogg", G_sound::candy, 20.f);
+        load_sound_to_buffer("res/g_sound/skull_hit_1.ogg", G_sound::wall_hit, 30.f);
+        load_sound_to_buffer("res/g_sound/sfx_exp_shortest_soft8.ogg", G_sound::br_destro_2, 30.f);
+        load_sound_to_buffer("res/g_sound/sfx_exp_short_hard2.ogg", G_sound::br_destro_1, 20.f);
+        load_sound_to_buffer("res/g_sound/sfx_exp_medium3.ogg", G_sound::br_destro_solid, 30);
     }
 
-    static void playIntroMusic(bool play)
-    {
-        if(play)
-            intro_music->play();
-        else
-            intro_music->stop();
-    }
     static void playClick()
     {
         click_sound->play();
@@ -64,10 +80,6 @@ public:
 
     static void play_sound(G_sound::Sound sound)
     {
-        // couldnt manage to play multiple sounds from same buffer due to
-        // status checking bugs and other stuff, sfml...
-        // in fututre i will certainly move to other sound apis
-        // maybe portauidio??? rtaudio??
         game_sounds[sound].stop();
         game_sounds[sound].play();
     }
@@ -103,15 +115,15 @@ public:
 private:
     static std::unique_ptr<sf::SoundBuffer> click_buffer, switch_buffer;
     static std::unique_ptr<sf::Sound> click_sound, switch_sound;
-    static std::unique_ptr<sf::Music> intro_music;
 
-    static void load_sound_to_buffer(const std::string filename, G_sound::Sound sound_type, float volume = 100.f)
+    static void load_sound_to_buffer(const std::string filename, G_sound::Sound sound_type, float volume = 100.f, bool loop = false)
     {
         if(!game_s_buffers[sound_type].loadFromFile(filename))
             throw std::runtime_error("[could not load: " + filename + ']');
 
         game_sounds[sound_type].setBuffer(game_s_buffers[sound_type]);
         game_sounds[sound_type].setVolume(volume);
+        game_sounds[sound_type].setLoop(loop);
     }
 };
 

@@ -24,7 +24,6 @@ SOURCES += main.cpp \
     game/game.cpp \
     game/paddle.cpp \
     game/ball.cpp \
-    game/brick.cpp \
     game/animation.cpp \
     game/entity.cpp \
     game/healthbar.cpp \

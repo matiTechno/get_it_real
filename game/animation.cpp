@@ -87,6 +87,7 @@ void Animation::set(Entity& entity) const
     }
 }
 
+// it's a nice hack
 std::vector<glm::vec4> lTCimp(const std::string& filename)
 {
     std::ifstream ifs(filename);

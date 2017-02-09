@@ -24,8 +24,6 @@ Intro::Intro(const glm::vec2& fbSize):
     text = std::make_unique<Text>(glm::vec4(255.f, 255.f, 0.f, 1.f), true, glm::vec2(),
                                   font, max_scale, "I'm matimaci!\nOhaio.\nArkanoid demo...");
 
-    SoundSystem::playIntroMusic(true);
-
     PData pdata{true, glm::vec2(2, 5), glm::vec4(0.f, 0.f, 0.f, 1.f), glm::vec4(255.f, 255.f, 255.f, 1.f),
                 glm::vec2(0.5f, 4.f), nullptr, glm::vec4(-50.f, 50.f, 50.f, -50.f), glm::vec4(-50.f, 50.f, 50.f, -50.f),
                 nullptr};
@@ -50,16 +48,16 @@ void Intro::update(float frameTime, PostProcessor& postProccesor)
         isDead = true;
         new_menu = MenuName::MainMenu;
         postProccesor.setWave(false);
-        SoundSystem::playIntroMusic(false);
     }
     else if(max_intro_time - intro_time_left < text_scaling_time)
     {
         text->setScale(max_scale / (max_scale * (max_intro_time - intro_time_left) / text_scaling_time));
         text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);
+        postProccesor.setWave(true);
     }
     else
     {
-        postProccesor.setWave(true);
+        postProccesor.setWave(false);
     }
 
     generator->update(frameTime);
@@ -362,7 +360,7 @@ WinScreen::WinScreen(const glm::vec2& fbSize):
     scene_time_left(scene_time)
 {
     text = std::make_unique<Text>(glm::vec4(0.f, 0.f, 255.f, 0.f), true, glm::vec2(),
-                                  font, 1.f, "You Won!");
+                                  font, 1.f, "You Win!");
 
     text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);
 

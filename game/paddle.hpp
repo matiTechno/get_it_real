@@ -26,9 +26,6 @@ public:
     }
 
     void reflectVEL(Dir pene);
-
-private:
-
 };
 
 #endif // PADDLE_HPP

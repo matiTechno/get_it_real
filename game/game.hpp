@@ -25,6 +25,8 @@ public:
 
     void doCollisions();
 
+    void update_logic(float dt_sec);
+
     PostProcessor& pp;
     glm::vec2 projSize;
     glm::mat4 projection;
@@ -36,13 +38,9 @@ public:
     Sprite background;
     float max_frame_time;
     float time_passed;
-    //float accumulator;
-    //float dt_update;
     float bottom_line;
     std::mt19937 rn_engine;
     Animation ball_drop_anim;
-
-    // entities
     std::vector<Brick> bricks;
     Paddle paddle;
     Ball ball;
@@ -77,8 +75,6 @@ public:
     Texture tex_eyeball;
     Animation anim_eyeball;
     float ball_gen_nor_sp_time;
-
-    void update_logic(float dt_sec);
 };
 
 #endif // GAME_HPP
