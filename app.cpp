@@ -38,8 +38,8 @@ void App::window_focus_callback(GLFWwindow*, int focused)
 App::~App()
 {
     // tricky :)
-    renderer.release();
-    postProcessor.release();
+    renderer.reset();
+    postProcessor.reset();
     glfwTerminate();
 }
 
