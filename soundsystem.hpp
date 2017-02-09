@@ -52,14 +52,14 @@ public:
         click_sound->setBuffer(*click_buffer);
         switch_sound->setBuffer(*switch_buffer);
 
-        load_sound_to_buffer("res/g_sound/Arkanoid SFX (1).ogg", G_sound::paddle_ball, 10.f);
+        load_sound_to_buffer("res/g_sound/Arkanoid SFX (1).ogg", G_sound::paddle_ball, 5.f);
         load_sound_to_buffer("res/g_sound/heartbeat.mp3_.ogg", G_sound::heart);
         load_sound_to_buffer("res/g_sound/133008__cosmicd__annulet-of-absorption(1).ogg", G_sound::gem, 30.f);
         load_sound_to_buffer("res/g_sound/Picked Coin Echo.ogg", G_sound::coin, 50.f);
-        load_sound_to_buffer("res/g_sound/rock_breaking.ogg", G_sound::rain, 15.f);
+        load_sound_to_buffer("res/g_sound/rock_breaking.ogg", G_sound::rain, 25.f);
         load_sound_to_buffer("res/g_sound/qubodupImpactMeat02.ogg", G_sound::hp_lose, 30.f);
-        load_sound_to_buffer("res/g_sound/foom_0.ogg", G_sound::powerup_destro, 30.f);
-        load_sound_to_buffer("res/g_sound/Arkanoid SFX (10).ogg", G_sound::eyeball, 50.f);
+        load_sound_to_buffer("res/g_sound/foom_0.ogg", G_sound::powerup_destro, 10.f);
+        load_sound_to_buffer("res/g_sound/Arkanoid SFX (10).ogg", G_sound::eyeball, 40.f);
         load_sound_to_buffer("res/g_sound/flagdrop.ogg", G_sound::paddle_ball_pene, 25.f);
         load_sound_to_buffer("res/g_sound/qubodupImpactStone.ogg", G_sound::solid_brick_hit, 15.f);
         load_sound_to_buffer("res/g_sound/Randomize3.ogg", G_sound::candy, 20.f);
