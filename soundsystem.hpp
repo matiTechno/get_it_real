@@ -63,7 +63,7 @@ public:
         load_sound_to_buffer("res/g_sound/flagdrop.ogg", G_sound::paddle_ball_pene, 25.f);
         load_sound_to_buffer("res/g_sound/qubodupImpactStone.ogg", G_sound::solid_brick_hit, 15.f);
         load_sound_to_buffer("res/g_sound/Randomize3.ogg", G_sound::candy, 20.f);
-        load_sound_to_buffer("res/g_sound/skull_hit_1.ogg", G_sound::wall_hit, 30.f);
+        load_sound_to_buffer("res/g_sound/skull_hit_1.ogg", G_sound::wall_hit, 20.f);
         load_sound_to_buffer("res/g_sound/sfx_exp_shortest_soft8.ogg", G_sound::br_destro_2, 30.f);
         load_sound_to_buffer("res/g_sound/sfx_exp_short_hard2.ogg", G_sound::br_destro_1, 20.f);
         load_sound_to_buffer("res/g_sound/sfx_exp_medium3.ogg", G_sound::br_destro_solid, 30);
