@@ -59,7 +59,7 @@ public:
         load_sound_to_buffer("res/g_sound/rock_breaking.ogg", G_sound::rain, 15.f);
         load_sound_to_buffer("res/g_sound/qubodupImpactMeat02.ogg", G_sound::hp_lose, 30.f);
         load_sound_to_buffer("res/g_sound/foom_0.ogg", G_sound::powerup_destro, 30.f);
-        load_sound_to_buffer("res/g_sound/Arkanoid SFX (10).ogg", G_sound::eyeball, 20.f);
+        load_sound_to_buffer("res/g_sound/Arkanoid SFX (10).ogg", G_sound::eyeball, 50.f);
         load_sound_to_buffer("res/g_sound/flagdrop.ogg", G_sound::paddle_ball_pene, 25.f);
         load_sound_to_buffer("res/g_sound/qubodupImpactStone.ogg", G_sound::solid_brick_hit, 15.f);
         load_sound_to_buffer("res/g_sound/Randomize3.ogg", G_sound::candy, 20.f);

@@ -20,16 +20,16 @@ public:
 private:
     static bool current;
 
-    static void run();
-    static void processInput();
+    void run();
+    void processInput();
     // false if no menu left
-    static bool handleMenus();
-    static void update(float frameTime);
-    static void render();
+    bool handleMenus();
+    void update(float frameTime);
+    void render();
 
     static GLFWwindow* window;
-    static std::unique_ptr<Renderer_2D> renderer;
-    static std::unique_ptr<PostProcessor> postProcessor;
+    std::unique_ptr<Renderer_2D> renderer;
+    std::unique_ptr<PostProcessor> postProcessor;
     static Input<int, std::hash<int>> keys;
     static std::vector<std::unique_ptr<Menu>> menus;
     static glm::vec2 fbSize;

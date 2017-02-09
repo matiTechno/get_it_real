@@ -35,10 +35,16 @@ void App::window_focus_callback(GLFWwindow*, int focused)
     }
 }
 
+App::~App()
+{
+    // tricky :)
+    renderer.release();
+    postProcessor.release();
+    glfwTerminate();
+}
+
 bool App::current = false;
 GLFWwindow* App::window;
-std::unique_ptr<Renderer_2D> App::renderer;
-std::unique_ptr<PostProcessor> App::postProcessor;
 Input<int, std::hash<int>> App::keys;
 std::vector<std::unique_ptr<Menu>> App::menus;
 glm::vec2 App::fbSize;
@@ -68,8 +74,11 @@ App::App(unsigned width, unsigned height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_RESIZABLE, 0);
+
+#ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
     window = glfwCreateWindow(int(width), int(height), "demo", nullptr, nullptr);
 
     if(!window)
@@ -95,6 +104,8 @@ App::App(unsigned width, unsigned height)
     if(!GLAD_GL_ARB_texture_storage)
         throw std::runtime_error("[ARB_texture_storage is required or opengl version 4.2+]");
 
+
+
     glfwSwapInterval(1);
 
     glfwSetKeyCallback(window, key_callback);
@@ -118,11 +129,6 @@ App::App(unsigned width, unsigned height)
     menus.push_back(std::make_unique<Intro>(fbSize));
 
     run();
-}
-
-App::~App()
-{
-    glfwTerminate();
 }
 
 void App::run()

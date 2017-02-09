@@ -16,7 +16,7 @@ Game::Game(const glm::vec2&, PostProcessor& pp):
     heart_tex("res/heart.png"),
     max_frame_time(0.018f),
     time_passed(0.f),
-    ball_drop_anim(0.8f, loadTexCoords("res/effect_hit_bott.sprites", 0.02f), false, Origin::bottom),
+    ball_drop_anim(1.f, loadTexCoords("res/effect_hit_bott.sprites", 0.02f), false, Origin::bottom),
     tex_hit_bott("res/effect_hit_bott.png"),
     ball_hit_paddle_anim(0.75f, loadTexCoords("res/effect_explo1.sprites", 0.06f), false, Origin::middle),
     tex_paddle_hit("res/effect_explo1.png"),

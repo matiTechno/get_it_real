@@ -402,7 +402,7 @@ LoseScreen::LoseScreen(const glm::vec2& fbSize):
     scene_time_left(scene_time)
 {
     text = std::make_unique<Text>(glm::vec4(255.f, 0.f, 0.f, 0.f), true, glm::vec2(),
-                                  font, 1.f, "You lost...");
+                                  font, 1.f, "GAME OVER...");
 
     text->position = glm::vec2(fbSize.x / 2.f - text->getSize().x / 2.f, fbSize.y / 2.f - text->getSize().y / 2.f);
 
